@@ -84,6 +84,7 @@ const clerkAppearance = {
     formButtonPrimary: 'bg-[#1a2744] hover:bg-[#243256] text-white',
     formFieldInput: 'bg-[#f1f5f9] border-[#e2e8f0] text-[#1a2744]',
     footerAction: 'bg-[#f8fafc]',
+    footerAction__signUp: { display: 'none' },
     dividerLine: 'bg-[#e2e8f0]',
     alert: 'bg-[#fef2f2]',
     otpCodeFieldInput: 'border-[#e2e8f0] bg-[#f1f5f9]',
