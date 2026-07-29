@@ -1,0 +1,2 @@
+- [Design subagent limits](design-subagent-limits.md) — large admin dashboard briefs crash the subagent; build directly instead.
+- [Admin dashboard architecture](admin-dashboard-arch.md) — STG Admin Portal at /admin, Clerk auth, full page inventory.
