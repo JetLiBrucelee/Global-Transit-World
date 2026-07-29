@@ -3,6 +3,7 @@ import { useClerk, useUser } from '@clerk/react';
 import {
   LayoutDashboard, Package, Users, FileText, Newspaper,
   UserCog, Warehouse, Truck, ClipboardList, LogOut, ChevronRight,
+  Bell, BarChart2, Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +18,10 @@ const nav = [
   { icon: UserCog, label: 'Staff Users', href: '/users' },
   { icon: Warehouse, label: 'Warehouses', href: '/warehouses' },
   { icon: Truck, label: 'Carriers', href: '/carriers' },
+  { icon: Bell, label: 'Notifications', href: '/notifications' },
+  { icon: BarChart2, label: 'Reports', href: '/reports' },
   { icon: ClipboardList, label: 'Audit Logs', href: '/audit-logs' },
+  { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
 export default function Sidebar() {

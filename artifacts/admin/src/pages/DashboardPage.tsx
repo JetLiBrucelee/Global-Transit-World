@@ -111,7 +111,7 @@ export default function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground leading-tight">{item.description}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(item.created_at).toLocaleString()}
+                      {new Date(item.createdAt ?? item.created_at).toLocaleString()}
                     </p>
                   </div>
                 </div>

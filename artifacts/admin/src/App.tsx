@@ -18,6 +18,9 @@ import UsersPage from '@/pages/UsersPage';
 import WarehousesPage from '@/pages/WarehousesPage';
 import CarriersPage from '@/pages/CarriersPage';
 import AuditLogsPage from '@/pages/AuditLogsPage';
+import NotificationsPage from '@/pages/NotificationsPage';
+import ReportsPage from '@/pages/ReportsPage';
+import SettingsPage from '@/pages/SettingsPage';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient({
@@ -211,6 +214,15 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/audit-logs">
               <Guard><AuditLogsPage /></Guard>
+            </Route>
+            <Route path="/notifications">
+              <Guard><NotificationsPage /></Guard>
+            </Route>
+            <Route path="/reports">
+              <Guard><ReportsPage /></Guard>
+            </Route>
+            <Route path="/settings">
+              <Guard><SettingsPage /></Guard>
             </Route>
             <Route component={NotFound} />
           </Switch>

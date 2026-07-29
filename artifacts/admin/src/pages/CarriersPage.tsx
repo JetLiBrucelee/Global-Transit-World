@@ -18,7 +18,7 @@ export default function CarriersPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState<any>({ is_active: true });
+  const [form, setForm] = useState<any>({ isActive: true });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const { data, isLoading } = useListCarriers();
@@ -28,7 +28,7 @@ export default function CarriersPage() {
 
   const carriers = Array.isArray(data) ? data : [];
 
-  function openCreate() { setEditing(null); setForm({ is_active: true }); setOpen(true); }
+  function openCreate() { setEditing(null); setForm({ isActive: true }); setOpen(true); }
   function openEdit(c: any) { setEditing(c); setForm({ ...c }); setOpen(true); }
 
   function handleSave() {
@@ -39,7 +39,7 @@ export default function CarriersPage() {
       });
     } else {
       createCarrier.mutate({ data: form }, {
-        onSuccess: () => { toast({ title: 'Carrier created' }); qc.invalidateQueries({ queryKey: getListCarriersQueryKey() }); setOpen(false); setForm({ is_active: true }); },
+        onSuccess: () => { toast({ title: 'Carrier created' }); qc.invalidateQueries({ queryKey: getListCarriersQueryKey() }); setOpen(false); setForm({ isActive: true }); },
         onError: () => toast({ title: 'Create failed', variant: 'destructive' }),
       });
     }
@@ -77,11 +77,11 @@ export default function CarriersPage() {
               <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/20">
                 <td className="px-4 py-3 font-medium text-foreground text-sm">{c.name}</td>
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{c.code}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground max-w-xs truncate">{c.tracking_url_template || '—'}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">{c.contact_email || '—'}</td>
+                <td className="px-4 py-3 text-xs text-muted-foreground max-w-xs truncate">{c.trackingUrl || '—'}</td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">{c.contactEmail || '—'}</td>
                 <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                    {c.is_active ? 'Active' : 'Inactive'}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                    {c.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -113,14 +113,14 @@ export default function CarriersPage() {
             </div>
             <div>
               <Label className="text-xs">Tracking URL Template</Label>
-              <Input className="h-8 text-sm mt-1" placeholder="https://example.com/track/{tracking_number}" value={form.tracking_url_template ?? ''} onChange={e => setForm((f: any) => ({ ...f, tracking_url_template: e.target.value }))} />
+              <Input className="h-8 text-sm mt-1" placeholder="https://example.com/track/{tracking_number}" value={form.trackingUrl ?? ''} onChange={e => setForm((f: any) => ({ ...f, trackingUrl: e.target.value }))} />
             </div>
             <div>
               <Label className="text-xs">Contact Email</Label>
-              <Input className="h-8 text-sm mt-1" value={form.contact_email ?? ''} onChange={e => setForm((f: any) => ({ ...f, contact_email: e.target.value }))} />
+              <Input className="h-8 text-sm mt-1" value={form.contactEmail ?? ''} onChange={e => setForm((f: any) => ({ ...f, contactEmail: e.target.value }))} />
             </div>
             <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input type="checkbox" checked={form.is_active ?? true} onChange={e => setForm((f: any) => ({ ...f, is_active: e.target.checked }))} className="rounded" />
+              <input type="checkbox" checked={form.isActive ?? true} onChange={e => setForm((f: any) => ({ ...f, isActive: e.target.checked }))} className="rounded" />
               Active
             </label>
           </div>

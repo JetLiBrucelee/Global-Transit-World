@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const FIELDS: [string, string][] = [
   ['name', 'Name'], ['code', 'Code'], ['city', 'City'], ['country', 'Country'],
-  ['address', 'Address'], ['contact_email', 'Contact Email'], ['contact_phone', 'Contact Phone'],
+  ['address', 'Address'], ['contactEmail', 'Contact Email'], ['contactPhone', 'Contact Phone'],
 ];
 
 export default function WarehousesPage() {
@@ -23,7 +23,7 @@ export default function WarehousesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState<any>({ is_active: true });
+  const [form, setForm] = useState<any>({ isActive: true });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const { data, isLoading } = useListWarehouses();
@@ -33,7 +33,7 @@ export default function WarehousesPage() {
 
   const warehouses = Array.isArray(data) ? data : [];
 
-  function openCreate() { setEditing(null); setForm({ is_active: true }); setOpen(true); }
+  function openCreate() { setEditing(null); setForm({ isActive: true }); setOpen(true); }
   function openEdit(w: any) { setEditing(w); setForm({ ...w }); setOpen(true); }
 
   function handleSave() {
@@ -44,7 +44,7 @@ export default function WarehousesPage() {
       });
     } else {
       createWarehouse.mutate({ data: form }, {
-        onSuccess: () => { toast({ title: 'Warehouse created' }); qc.invalidateQueries({ queryKey: getListWarehousesQueryKey() }); setOpen(false); setForm({ is_active: true }); },
+        onSuccess: () => { toast({ title: 'Warehouse created' }); qc.invalidateQueries({ queryKey: getListWarehousesQueryKey() }); setOpen(false); setForm({ isActive: true }); },
         onError: () => toast({ title: 'Create failed', variant: 'destructive' }),
       });
     }
@@ -83,10 +83,10 @@ export default function WarehousesPage() {
                 <td className="px-4 py-3 font-medium text-foreground text-sm">{w.name}</td>
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{w.code}</td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{w.city}, {w.country}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">{w.contact_email || '—'}</td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">{w.contactEmail || '—'}</td>
                 <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${w.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                    {w.is_active ? 'Active' : 'Inactive'}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${w.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                    {w.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -109,14 +109,14 @@ export default function WarehousesPage() {
           <DialogHeader><DialogTitle>{editing ? 'Edit Warehouse' : 'Add Warehouse'}</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             {FIELDS.map(([key, label]) => (
-              <div key={key} className={['address', 'contact_email', 'contact_phone'].includes(key) ? 'col-span-2' : ''}>
+              <div key={key} className={['address', 'contactEmail', 'contactPhone'].includes(key) ? 'col-span-2' : ''}>
                 <Label className="text-xs">{label}</Label>
                 <Input className="h-8 text-sm mt-1" value={form[key] ?? ''} onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))} />
               </div>
             ))}
             <div className="col-span-2">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={form.is_active ?? true} onChange={e => setForm((f: any) => ({ ...f, is_active: e.target.checked }))} className="rounded" />
+                <input type="checkbox" checked={form.isActive ?? true} onChange={e => setForm((f: any) => ({ ...f, isActive: e.target.checked }))} className="rounded" />
                 Active
               </label>
             </div>

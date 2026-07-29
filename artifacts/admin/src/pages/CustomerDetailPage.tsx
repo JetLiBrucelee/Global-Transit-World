@@ -15,17 +15,19 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-slate-100 text-slate-700', processing: 'bg-blue-100 text-blue-700',
-  in_transit: 'bg-amber-100 text-amber-700', customs_review: 'bg-purple-100 text-purple-700',
-  delivered: 'bg-green-100 text-green-700', held: 'bg-red-100 text-red-700',
+  in_transit: 'bg-amber-100 text-amber-700',
+  delivered: 'bg-green-100 text-green-700',
+  package_hold: 'bg-red-100 text-red-700',
+  customs_review: 'bg-purple-100 text-purple-700',
+  processing: 'bg-blue-100 text-blue-700',
 };
 
 export default function CustomerDetailPage({ id }: { id: string }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [, setLocation] = useLocation();
-  const { data: customer, isLoading } = useGetCustomer(id, { query: { enabled: !!id, queryKey: ['/api/customers', id] } });
-  const { data: shipmentsData } = useListShipments({ limit: 10 });
+  const { data: customer, isLoading } = useGetCustomer(id, { query: { enabled: !!id } as any });
+  const { data: shipmentsData } = useListShipments({ customerId: id, limit: 10 });
 
   const updateCustomer = useUpdateCustomer();
   const deleteCustomer = useDeleteCustomer();
@@ -34,15 +36,13 @@ export default function CustomerDetailPage({ id }: { id: string }) {
   const [editForm, setEditForm] = useState<any>({});
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const shipments = Array.isArray(shipmentsData) ? shipmentsData : (shipmentsData as any)?.shipments ?? [];
+  const shipments = (shipmentsData as any)?.data ?? [];
 
-  function openEdit() {
-    setEditForm({ ...customer });
-    setEditOpen(true);
-  }
+  function openEdit() { setEditForm({ ...customer }); setEditOpen(true); }
 
   function handleUpdate() {
-    updateCustomer.mutate({ id, data: editForm }, {
+    const { id: _id, createdAt: _ca, clerkId: _ck, ...rest } = editForm;
+    updateCustomer.mutate({ id, data: rest }, {
       onSuccess: () => {
         toast({ title: 'Customer updated' });
         qc.invalidateQueries({ queryKey: getGetCustomerQueryKey(id) });
@@ -62,10 +62,7 @@ export default function CustomerDetailPage({ id }: { id: string }) {
     });
   }
 
-  if (isLoading) {
-    return <div className="p-6 space-y-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>;
-  }
-
+  if (isLoading) return <div className="p-6 space-y-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>;
   if (!customer) return <div className="p-6 text-muted-foreground">Customer not found</div>;
 
   const c = customer as any;
@@ -76,22 +73,28 @@ export default function CustomerDetailPage({ id }: { id: string }) {
         <div className="flex items-center gap-3">
           <Link href="/customers"><a className="p-1.5 hover:bg-muted rounded-lg"><ArrowLeft size={16} /></a></Link>
           <div>
-            <h1 className="text-xl font-bold">{c.first_name} {c.last_name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold">{c.firstName} {c.lastName}</h1>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                {c.isActive ? 'Active' : 'Inactive'}
+              </span>
+            </div>
             <p className="text-sm text-muted-foreground">{c.email}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={openEdit}><Edit2 size={13} className="mr-1" /> Edit</Button>
+          <Button size="sm" variant="outline" onClick={openEdit}><Edit2 size={13} className="mr-1" />Edit</Button>
           <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700" onClick={() => setDeleteOpen(true)}>
-            <Trash2 size={13} className="mr-1" /> Delete
+            <Trash2 size={13} className="mr-1" />Delete
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {[
-          ['Email', c.email], ['Phone', c.phone], ['Company', c.company_name],
-          ['Country', c.country], ['City', c.city], ['Address', c.address],
+          ['Email', c.email], ['Phone', c.phone], ['Country', c.country],
+          ['Email Notifs', c.notifyEmail ? 'Yes' : 'No'], ['SMS Notifs', c.notifySms ? 'Yes' : 'No'],
+          ['Member Since', new Date(c.createdAt).toLocaleDateString()],
         ].map(([label, val]) => (
           <div key={label} className="bg-card rounded-xl border border-border p-4">
             <p className="text-xs text-muted-foreground">{label}</p>
@@ -100,35 +103,40 @@ export default function CustomerDetailPage({ id }: { id: string }) {
         ))}
       </div>
 
+      {/* Shipment history */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h2 className="font-semibold text-sm">Recent Shipments</h2>
+          <h2 className="font-semibold text-sm">Shipment History</h2>
         </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/30">
-              {['Tracking #', 'Route', 'Status', 'Created'].map(h => (
-                <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {shipments.slice(0, 5).map((s: any) => (
-              <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/20">
-                <td className="px-4 py-3">
-                  <Link href={`/shipments/${s.id}`}>
-                    <a className="font-mono text-xs font-semibold text-primary hover:underline">{s.tracking_number}</a>
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-xs">{s.origin_country} → {s.destination_country}</td>
-                <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[s.status] ?? 'bg-gray-100'}`}>{s.status}</span>
-                </td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</td>
+        {shipments.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">No shipments</div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/30">
+                {['Tracking #', 'Route', 'Status', 'Created'].map(h => (
+                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {shipments.map((s: any) => (
+                <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/20">
+                  <td className="px-4 py-3">
+                    <Link href={`/shipments/${s.id}`}>
+                      <a className="font-mono text-xs font-semibold text-primary hover:underline">{s.trackingNumber}</a>
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-xs">{s.originCountry} → {s.destinationCountry}</td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[s.status] ?? 'bg-slate-100 text-slate-600'}`}>{s.status?.replace(/_/g, ' ')}</span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Edit Dialog */}
@@ -137,19 +145,28 @@ export default function CustomerDetailPage({ id }: { id: string }) {
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             {[
-              ['first_name', 'First Name'], ['last_name', 'Last Name'],
+              ['firstName', 'First Name'], ['lastName', 'Last Name'],
               ['email', 'Email'], ['phone', 'Phone'],
-              ['company_name', 'Company'], ['country', 'Country'],
-              ['city', 'City'],
+              ['country', 'Country'],
             ].map(([key, label]) => (
               <div key={key}>
                 <Label className="text-xs">{label}</Label>
                 <Input className="h-8 text-sm mt-1" value={editForm[key] ?? ''} onChange={e => setEditForm((f: any) => ({ ...f, [key]: e.target.value }))} />
               </div>
             ))}
-            <div className="col-span-2">
-              <Label className="text-xs">Address</Label>
-              <Input className="h-8 text-sm mt-1" value={editForm.address ?? ''} onChange={e => setEditForm((f: any) => ({ ...f, address: e.target.value }))} />
+            <div className="col-span-2 flex gap-4">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" checked={editForm.notifyEmail ?? false} onChange={e => setEditForm((f: any) => ({ ...f, notifyEmail: e.target.checked }))} className="rounded" />
+                Email notifications
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" checked={editForm.notifySms ?? false} onChange={e => setEditForm((f: any) => ({ ...f, notifySms: e.target.checked }))} className="rounded" />
+                SMS notifications
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" checked={editForm.isActive ?? true} onChange={e => setEditForm((f: any) => ({ ...f, isActive: e.target.checked }))} className="rounded" />
+                Active
+              </label>
             </div>
           </div>
           <DialogFooter>
@@ -163,7 +180,7 @@ export default function CustomerDetailPage({ id }: { id: string }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Customer?</AlertDialogTitle>
-            <AlertDialogDescription>This will permanently delete {c.first_name} {c.last_name} and cannot be undone.</AlertDialogDescription>
+            <AlertDialogDescription>This permanently deletes {c.firstName} {c.lastName} and cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

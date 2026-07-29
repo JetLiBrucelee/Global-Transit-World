@@ -36,18 +36,19 @@ export default function QuotesPage() {
   const { data, isLoading } = useListQuotes({ status: status || undefined, page, limit: 20 });
   const updateQuote = useUpdateQuote();
 
-  const quotes = Array.isArray(data) ? data : (data as any)?.quotes ?? [];
-  const total = (data as any)?.total ?? quotes.length;
-  const pages = Math.ceil(total / 20);
+  const quotes = (data as any)?.data ?? [];
+  const total = (data as any)?.total ?? 0;
+  const pages = Math.max(1, Math.ceil(total / 20));
 
   function openRespond(q: any) {
     setSelected(q);
-    setForm({ status: q.status, estimated_price: q.estimated_price ?? '', staff_notes: q.staff_notes ?? '' });
+    setForm({ status: q.status, quotedPrice: q.quotedPrice ?? '', adminNotes: q.adminNotes ?? '' });
     setRespondOpen(true);
   }
 
   function handleRespond() {
-    updateQuote.mutate({ id: selected.id, data: form }, {
+    const payload = { status: form.status, adminNotes: form.adminNotes || undefined, quotedPrice: form.quotedPrice || undefined };
+    updateQuote.mutate({ id: selected.id, data: payload }, {
       onSuccess: () => {
         toast({ title: 'Quote updated' });
         qc.invalidateQueries({ queryKey: getListQuotesQueryKey() });
@@ -65,9 +66,7 @@ export default function QuotesPage() {
           <p className="text-muted-foreground text-sm">{total.toLocaleString()} total quotes</p>
         </div>
         <Select value={status} onValueChange={v => { setStatus(v === 'all' ? '' : v); setPage(1); }}>
-          <SelectTrigger className="w-36 h-8 text-sm">
-            <SelectValue placeholder="All statuses" />
-          </SelectTrigger>
+          <SelectTrigger className="w-36 h-8 text-sm"><SelectValue placeholder="All statuses" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -92,17 +91,17 @@ export default function QuotesPage() {
             )) : quotes.map((q: any) => (
               <>
                 <tr key={q.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs font-semibold">{q.reference_number}</td>
+                  <td className="px-4 py-3 font-mono text-xs font-semibold">{q.referenceNumber}</td>
                   <td className="px-4 py-3 text-xs">
-                    <div className="font-medium text-foreground">{q.first_name} {q.last_name}</div>
-                    <div className="text-muted-foreground">{q.email}</div>
+                    <div className="font-medium text-foreground">{q.contactName}</div>
+                    <div className="text-muted-foreground">{q.contactEmail}</div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{q.origin_country} → {q.destination_country}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{q.service_type?.replace('_', ' ')}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{q.originCountry} → {q.destinationCountry}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{q.serviceType?.replace(/_/g, ' ')}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[q.status] ?? 'bg-gray-100'}`}>{q.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(q.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(q.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => openRespond(q)}>Respond</Button>
@@ -113,15 +112,18 @@ export default function QuotesPage() {
                   </td>
                 </tr>
                 {expanded === q.id && (
-                  <tr className="border-b border-border bg-muted/10">
+                  <tr key={`${q.id}-detail`} className="border-b border-border bg-muted/10">
                     <td colSpan={7} className="px-6 py-4">
                       <div className="grid grid-cols-3 gap-4 text-xs">
-                        <div><span className="text-muted-foreground">Company:</span> <span className="font-medium">{q.company_name || '—'}</span></div>
-                        <div><span className="text-muted-foreground">Phone:</span> <span className="font-medium">{q.phone || '—'}</span></div>
-                        <div><span className="text-muted-foreground">Weight:</span> <span className="font-medium">{q.estimated_weight_kg ? `${q.estimated_weight_kg} kg` : '—'}</span></div>
-                        <div className="col-span-3"><span className="text-muted-foreground">Cargo:</span> <span className="font-medium">{q.cargo_description || '—'}</span></div>
-                        {q.estimated_price && <div><span className="text-muted-foreground">Quoted Price:</span> <span className="font-semibold text-green-600">${q.estimated_price}</span></div>}
-                        {q.staff_notes && <div className="col-span-3"><span className="text-muted-foreground">Staff Notes:</span> <span className="font-medium">{q.staff_notes}</span></div>}
+                        <div><span className="text-muted-foreground">Company:</span> <span className="font-medium">{q.companyName || '—'}</span></div>
+                        <div><span className="text-muted-foreground">Phone:</span> <span className="font-medium">{q.contactPhone || '—'}</span></div>
+                        <div><span className="text-muted-foreground">Weight:</span> <span className="font-medium">{q.weightKg ? `${q.weightKg} kg` : '—'}</span></div>
+                        <div><span className="text-muted-foreground">Dimensions:</span> <span className="font-medium">{q.dimensions || '—'}</span></div>
+                        <div><span className="text-muted-foreground">Declared Value:</span> <span className="font-medium">{q.declaredValue ? `${q.currency ?? 'USD'} ${q.declaredValue}` : '—'}</span></div>
+                        {q.cargoDescription && <div className="col-span-3"><span className="text-muted-foreground">Cargo:</span> <span className="font-medium">{q.cargoDescription}</span></div>}
+                        {q.specialRequirements && <div className="col-span-3"><span className="text-muted-foreground">Special:</span> <span className="font-medium">{q.specialRequirements}</span></div>}
+                        {q.quotedPrice && <div><span className="text-muted-foreground">Quoted Price:</span> <span className="font-semibold text-green-600">{q.currency ?? 'USD'} {q.quotedPrice}</span></div>}
+                        {q.adminNotes && <div className="col-span-3"><span className="text-muted-foreground">Admin Notes:</span> <span className="font-medium">{q.adminNotes}</span></div>}
                       </div>
                     </td>
                   </tr>
@@ -151,8 +153,8 @@ export default function QuotesPage() {
           {selected && (
             <div className="space-y-4">
               <div className="bg-muted/40 rounded-lg p-3 text-xs">
-                <p className="font-semibold text-foreground">{selected.first_name} {selected.last_name} — {selected.reference_number}</p>
-                <p className="text-muted-foreground">{selected.origin_country} → {selected.destination_country} · {selected.service_type?.replace('_', ' ')}</p>
+                <p className="font-semibold text-foreground">{selected.contactName} — {selected.referenceNumber}</p>
+                <p className="text-muted-foreground">{selected.originCountry} → {selected.destinationCountry} · {selected.serviceType?.replace(/_/g, ' ')}</p>
               </div>
               <div>
                 <Label className="text-xs">Update Status</Label>
@@ -162,12 +164,12 @@ export default function QuotesPage() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">Estimated Price (USD)</Label>
-                <Input type="number" className="h-8 text-sm mt-1" value={form.estimated_price ?? ''} onChange={e => setForm((f: any) => ({ ...f, estimated_price: parseFloat(e.target.value) }))} />
+                <Label className="text-xs">Quoted Price</Label>
+                <Input className="h-8 text-sm mt-1" placeholder="e.g. 1250.00" value={form.quotedPrice ?? ''} onChange={e => setForm((f: any) => ({ ...f, quotedPrice: e.target.value }))} />
               </div>
               <div>
-                <Label className="text-xs">Staff Notes</Label>
-                <Textarea className="text-sm mt-1" rows={3} value={form.staff_notes ?? ''} onChange={e => setForm((f: any) => ({ ...f, staff_notes: e.target.value }))} />
+                <Label className="text-xs">Admin Notes</Label>
+                <Textarea className="text-sm mt-1" rows={3} value={form.adminNotes ?? ''} onChange={e => setForm((f: any) => ({ ...f, adminNotes: e.target.value }))} />
               </div>
             </div>
           )}

@@ -27,7 +27,7 @@ export default function NewsPage() {
   const [tab, setTab] = useState<'articles' | 'cms'>('articles');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState<any>({ is_published: false, is_featured: false });
+  const [form, setForm] = useState<any>({ isPublished: false, isFeatured: false });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const { data: news, isLoading } = useListNews();
@@ -37,12 +37,12 @@ export default function NewsPage() {
   const deleteArticle = useDeleteNewsArticle();
   const upsertSection = useUpsertCmsSection();
 
-  const articles = Array.isArray(news) ? news : (news as any)?.articles ?? [];
+  const articles: any[] = Array.isArray(news) ? news : (news as any)?.data ?? (news as any)?.articles ?? [];
   const cmsSections = Array.isArray(cms) ? cms : [];
 
   function openCreate() {
     setEditing(null);
-    setForm({ is_published: false, is_featured: false });
+    setForm({ isPublished: false, isFeatured: false });
     setOpen(true);
   }
 
@@ -131,18 +131,18 @@ export default function NewsPage() {
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{a.category?.replace('_', ' ')}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${a.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                      {a.is_published ? 'Published' : 'Draft'}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${(a.isPublished ?? a.is_published) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {(a.isPublished ?? a.is_published) ? 'Published' : 'Draft'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs">{a.is_featured ? 'Yes' : '—'}</td>
+                  <td className="px-4 py-3 text-xs">{(a.isFeatured ?? a.is_featured) ? 'Yes' : '—'}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {a.published_at ? new Date(a.published_at).toLocaleDateString() : '—'}
+                    {(a.publishedAt ?? a.published_at) ? new Date(a.publishedAt ?? a.published_at).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <button onClick={() => openEdit(a)} className="p-1 hover:bg-muted rounded"><Edit2 size={13} /></button>
-                      <button onClick={() => setDeleteTarget(a.id)} className="p-1 hover:bg-red-50 hover:text-red-600 rounded"><Trash2 size={13} /></button>
+                      <button onClick={() => setDeleteTarget(a.slug)} className="p-1 hover:bg-red-50 hover:text-red-600 rounded"><Trash2 size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -233,7 +233,7 @@ export default function NewsPage() {
               </div>
               <div>
                 <Label className="text-xs">Author</Label>
-                <Input className="h-8 text-sm mt-1" value={form.author_name ?? ''} onChange={e => setForm((f: any) => ({ ...f, author_name: e.target.value }))} />
+                <Input className="h-8 text-sm mt-1" value={form.authorName ?? ''} onChange={e => setForm((f: any) => ({ ...f, authorName: e.target.value }))} />
               </div>
             </div>
             <div>
@@ -246,11 +246,11 @@ export default function NewsPage() {
             </div>
             <div className="flex gap-6">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={form.is_published ?? false} onChange={e => setForm((f: any) => ({ ...f, is_published: e.target.checked }))} className="rounded" />
+                <input type="checkbox" checked={form.isPublished ?? false} onChange={e => setForm((f: any) => ({ ...f, isPublished: e.target.checked }))} className="rounded" />
                 Published
               </label>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={form.is_featured ?? false} onChange={e => setForm((f: any) => ({ ...f, is_featured: e.target.checked }))} className="rounded" />
+                <input type="checkbox" checked={form.isFeatured ?? false} onChange={e => setForm((f: any) => ({ ...f, isFeatured: e.target.checked }))} className="rounded" />
                 Featured
               </label>
             </div>
