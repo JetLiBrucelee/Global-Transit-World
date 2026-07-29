@@ -56,7 +56,7 @@ export default function Quote() {
   const selectedService = watch("serviceType");
 
   const onSubmit = (data: FormValues) => {
-    createQuote({ body: data }, {
+    createQuote({ data: data }, {
       onSuccess: (result) => {
         setRefNumber(result.referenceNumber ?? "STG-Q-" + Date.now());
         setSubmitted(true);

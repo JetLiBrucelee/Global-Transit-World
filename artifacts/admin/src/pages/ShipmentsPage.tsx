@@ -41,9 +41,9 @@ export default function ShipmentsPage() {
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<Partial<ShipmentInput>>({});
+  const [form, setForm] = useState<Partial<ShipmentInput> & { trackingNumber?: string }>({});
 
-  const { data, isLoading } = useListShipments({ params: { search: search || undefined, status: status || undefined, page, limit: 20 } });
+  const { data, isLoading } = useListShipments({ search: search || undefined, status: status || undefined, page, limit: 20 });
   const { data: warehouses } = useListWarehouses();
   const { data: carriers } = useListCarriers();
   const createShipment = useCreateShipment();
@@ -57,7 +57,7 @@ export default function ShipmentsPage() {
 
   function handleGenerate() {
     generateTracking.mutate({} as any, {
-      onSuccess: (res: any) => setForm(f => ({ ...f, tracking_number: res.tracking_number })),
+      onSuccess: (res: any) => setForm(f => ({ ...f, trackingNumber: res.trackingNumber })),
     });
   }
 
@@ -74,7 +74,7 @@ export default function ShipmentsPage() {
   }
 
   function handleArchive(id: string) {
-    archiveShipment.mutate({ id, data: { reason: 'Archived by admin' } }, {
+    archiveShipment.mutate({ id, data: { isArchived: true } }, {
       onSuccess: () => {
         toast({ title: 'Shipment archived' });
         qc.invalidateQueries({ queryKey: getListShipmentsQueryKey() });
@@ -213,29 +213,29 @@ export default function ShipmentsPage() {
             <div className="col-span-2">
               <Label className="text-xs">Tracking Number</Label>
               <div className="flex gap-2 mt-1">
-                <Input value={form.tracking_number ?? ''} onChange={e => setForm(f => ({ ...f, tracking_number: e.target.value }))} className="h-8 text-sm font-mono" />
+                <Input value={form.trackingNumber ?? ''} onChange={e => setForm(f => ({ ...f, trackingNumber: e.target.value }))} className="h-8 text-sm font-mono" />
                 <Button size="sm" variant="outline" onClick={handleGenerate} disabled={generateTracking.isPending}>Generate</Button>
               </div>
             </div>
             <div>
               <Label className="text-xs">Origin City</Label>
-              <Input className="h-8 text-sm mt-1" value={form.origin_city ?? ''} onChange={e => setForm(f => ({ ...f, origin_city: e.target.value }))} />
+              <Input className="h-8 text-sm mt-1" value={form.originCity ?? ''} onChange={e => setForm(f => ({ ...f, originCity: e.target.value }))} />
             </div>
             <div>
               <Label className="text-xs">Origin Country</Label>
-              <Input className="h-8 text-sm mt-1" value={form.origin_country ?? ''} onChange={e => setForm(f => ({ ...f, origin_country: e.target.value }))} />
+              <Input className="h-8 text-sm mt-1" value={form.originCountry ?? ''} onChange={e => setForm(f => ({ ...f, originCountry: e.target.value }))} />
             </div>
             <div>
               <Label className="text-xs">Destination City</Label>
-              <Input className="h-8 text-sm mt-1" value={form.destination_city ?? ''} onChange={e => setForm(f => ({ ...f, destination_city: e.target.value }))} />
+              <Input className="h-8 text-sm mt-1" value={form.destinationCity ?? ''} onChange={e => setForm(f => ({ ...f, destinationCity: e.target.value }))} />
             </div>
             <div>
               <Label className="text-xs">Destination Country</Label>
-              <Input className="h-8 text-sm mt-1" value={form.destination_country ?? ''} onChange={e => setForm(f => ({ ...f, destination_country: e.target.value }))} />
+              <Input className="h-8 text-sm mt-1" value={form.destinationCountry ?? ''} onChange={e => setForm(f => ({ ...f, destinationCountry: e.target.value }))} />
             </div>
             <div>
               <Label className="text-xs">Service Type</Label>
-              <Select value={form.service_type ?? ''} onValueChange={v => setForm(f => ({ ...f, service_type: v }))}>
+              <Select value={form.serviceType ?? ''} onValueChange={v => setForm(f => ({ ...f, serviceType: v }))}>
                 <SelectTrigger className="h-8 text-sm mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
                   {SERVICE_TYPES.map(s => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}
@@ -253,11 +253,11 @@ export default function ShipmentsPage() {
             </div>
             <div>
               <Label className="text-xs">Weight (kg)</Label>
-              <Input type="number" className="h-8 text-sm mt-1" value={form.weight_kg ?? ''} onChange={e => setForm(f => ({ ...f, weight_kg: parseFloat(e.target.value) }))} />
+              <Input type="number" className="h-8 text-sm mt-1" value={form.weightKg ?? ''} onChange={e => setForm(f => ({ ...f, weightKg: e.target.value }))} />
             </div>
             <div>
               <Label className="text-xs">Carrier</Label>
-              <Select value={form.carrier_id ?? ''} onValueChange={v => setForm(f => ({ ...f, carrier_id: v }))}>
+              <Select value={form.carrierId ?? ''} onValueChange={v => setForm(f => ({ ...f, carrierId: v }))}>
                 <SelectTrigger className="h-8 text-sm mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
                   {Array.isArray(carriers) && carriers.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}

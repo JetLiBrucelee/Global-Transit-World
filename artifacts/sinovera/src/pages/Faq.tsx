@@ -99,7 +99,9 @@ export default function Faq() {
     })
     .filter(f => f.q && f.a);
 
-  const faqs = cmsFaqs.length > 0 ? cmsFaqs : STATIC_FAQS;
+  const faqs: { q: string; a: string }[] = cmsFaqs.length > 0
+    ? cmsFaqs.map(f => ({ q: f.q ?? "", a: f.a ?? "" }))
+    : STATIC_FAQS;
 
   const toggle = (i: number) => setOpenIdx(openIdx === i ? null : i);
 

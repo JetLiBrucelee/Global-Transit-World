@@ -304,7 +304,7 @@ export default function Home() {
       </section>
 
       {/* News */}
-      {(newsList?.articles ?? []).length > 0 && (
+      {(newsList?.data ?? []).length > 0 && (
         <section className="py-20 bg-gradient-to-b from-[#f1f5f9] to-white">
           <div className="container mx-auto px-4">
             <div className="flex items-end justify-between mb-12">
@@ -317,7 +317,7 @@ export default function Home() {
               </Link>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
-              {(newsList?.articles ?? []).slice(0, 3).map((article) => (
+              {(newsList?.data ?? []).slice(0, 3).map((article) => (
                 <Link key={article.slug} href={`/news/${article.slug}`} data-testid={`link-news-${article.slug}`}>
                   <Card className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer h-full flex flex-col">
                     <div className="bg-gradient-to-br from-[#0f172a] to-[#1e3a6e] h-40 flex items-center justify-center">

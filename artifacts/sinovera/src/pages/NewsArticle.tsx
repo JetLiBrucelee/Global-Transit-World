@@ -21,7 +21,7 @@ export default function NewsArticle() {
     { limit: 3 },
     { query: { queryKey: ["news", "related"] } }
   );
-  const related = (relatedData?.articles ?? []).filter(a => a.slug !== slug).slice(0, 3);
+  const related = (relatedData?.data ?? []).filter(a => a.slug !== slug).slice(0, 3);
 
   if (isLoading) {
     return (
@@ -73,9 +73,9 @@ export default function NewsArticle() {
                   {format(new Date(article.publishedAt), "MMMM d, yyyy")}
                 </span>
               )}
-              {article.authorName && (
+              {article.category && (
                 <span className="flex items-center gap-1.5">
-                  <User className="w-4 h-4" /> {article.authorName}
+                  <User className="w-4 h-4" /> {article.category}
                 </span>
               )}
             </div>

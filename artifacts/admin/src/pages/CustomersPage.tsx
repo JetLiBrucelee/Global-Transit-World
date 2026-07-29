@@ -20,7 +20,7 @@ export default function CustomersPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<any>({});
 
-  const { data, isLoading } = useListCustomers({ params: { search: search || undefined, page, limit: 20 } });
+  const { data, isLoading } = useListCustomers({ search: search || undefined, page, limit: 20 });
   const createCustomer = useCreateCustomer();
 
   const customers = Array.isArray(data) ? data : (data as any)?.customers ?? [];

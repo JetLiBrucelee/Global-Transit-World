@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="16" fill="#132143"/>
+  <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" fill="#F59E0B" font-family="'Plus Jakarta Sans', sans-serif" font-size="38" font-weight="800">STG</text>
+  <path d="M22 80 Q60 72 98 80" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"/>
+</svg>

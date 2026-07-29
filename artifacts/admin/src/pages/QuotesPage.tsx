@@ -33,7 +33,7 @@ export default function QuotesPage() {
   const [selected, setSelected] = useState<any>(null);
   const [form, setForm] = useState<any>({});
 
-  const { data, isLoading } = useListQuotes({ params: { status: status || undefined, page, limit: 20 } });
+  const { data, isLoading } = useListQuotes({ status: status || undefined, page, limit: 20 });
   const updateQuote = useUpdateQuote();
 
   const quotes = Array.isArray(data) ? data : (data as any)?.quotes ?? [];

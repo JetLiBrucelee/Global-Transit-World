@@ -19,7 +19,7 @@ export default function News() {
     { query: { queryKey: ["news", "list", category] } }
   );
 
-  const articles = data?.articles ?? [];
+  const articles = data?.data ?? [];
 
   return (
     <div>

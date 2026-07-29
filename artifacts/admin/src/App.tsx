@@ -183,13 +183,13 @@ function ClerkProviderWithRoutes() {
               <Guard><DashboardPage /></Guard>
             </Route>
             <Route path="/shipments/:id">
-              {(p) => <Guard><ShipmentDetailPage id={p.id} /></Guard>}
+              {(p: any) => <Guard><ShipmentDetailPage id={p?.id ?? ''} /></Guard>}
             </Route>
             <Route path="/shipments">
               <Guard><ShipmentsPage /></Guard>
             </Route>
             <Route path="/customers/:id">
-              {(p) => <Guard><CustomerDetailPage id={p.id} /></Guard>}
+              {(p: any) => <Guard><CustomerDetailPage id={p?.id ?? ''} /></Guard>}
             </Route>
             <Route path="/customers">
               <Guard><CustomersPage /></Guard>

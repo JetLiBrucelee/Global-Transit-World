@@ -24,8 +24,8 @@ export default function CustomerDetailPage({ id }: { id: string }) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [, setLocation] = useLocation();
-  const { data: customer, isLoading } = useGetCustomer(id, { query: { enabled: !!id } });
-  const { data: shipmentsData } = useListShipments({ params: { limit: 10 } });
+  const { data: customer, isLoading } = useGetCustomer(id, { query: { enabled: !!id, queryKey: ['/api/customers', id] } });
+  const { data: shipmentsData } = useListShipments({ limit: 10 });
 
   const updateCustomer = useUpdateCustomer();
   const deleteCustomer = useDeleteCustomer();

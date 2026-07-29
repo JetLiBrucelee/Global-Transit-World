@@ -26,12 +26,10 @@ export default function AuditLogsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data, isLoading } = useListAuditLogs({
-    params: {
-      action: action || undefined,
-      entity_type: entityType || undefined,
-      page,
-      limit: 50,
-    },
+    action: action || undefined,
+    entityType: entityType || undefined,
+    page,
+    limit: 50,
   });
 
   const logs = Array.isArray(data) ? data : (data as any)?.logs ?? [];

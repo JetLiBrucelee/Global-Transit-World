@@ -1,16 +1,20 @@
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useRoute, Link } from "wouter";
-import { useTrackShipment } from "@workspace/api-client-react";
+import { Show } from "@clerk/react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
   Package, MapPin, Calendar, AlertTriangle, CheckCircle,
-  Clock, Truck, ChevronLeft, Globe, Weight, Boxes
+  Clock, Truck, ChevronLeft, Globe, Weight, Boxes,
+  Bookmark, BookmarkCheck, Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTrackShipment, useGetMySavedShipments, useSaveShipment, useUnsaveShipment, getGetMySavedShipmentsQueryKey } from "@workspace/api-client-react";
 
 const STATUS_COLORS: Record<string, string> = {
   delivered: "bg-green-100 text-green-800 border-green-200",
@@ -36,6 +40,54 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
       <span className="text-xs text-muted-foreground uppercase tracking-wide">{label}</span>
       <span className="font-semibold text-primary text-sm">{value}</span>
     </div>
+  );
+}
+
+function SaveShipmentButton({ trackingNumber }: { trackingNumber: string }) {
+  const qc = useQueryClient();
+  const { data: savedShipments } = useGetMySavedShipments({ query: { retry: false, queryKey: getGetMySavedShipmentsQueryKey() } });
+  const { mutateAsync: save } = useSaveShipment();
+  const { mutateAsync: unsave } = useUnsaveShipment();
+  const [loading, setLoading] = useState(false);
+
+  // Match by tracking number since public response doesn't include internal UUID
+  const existingSaved = (savedShipments ?? []).find(
+    s => s.shipment?.trackingNumber === trackingNumber
+  );
+  const isSaved = !!existingSaved;
+
+  async function handleToggle() {
+    setLoading(true);
+    try {
+      if (existingSaved) {
+        await unsave({ savedId: existingSaved.id });
+      } else {
+        // Pass trackingNumber; the server resolves it to a UUID (custom field accepted by the endpoint)
+        await save({ data: { shipmentId: trackingNumber } });
+      }
+      qc.invalidateQueries({ queryKey: ["/api/customers/me/saved-shipments"] });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Button
+      variant={isSaved ? "default" : "outline"}
+      size="sm"
+      className={`gap-2 ${isSaved ? "bg-primary text-white hover:bg-primary/90" : "border-white/30 text-white hover:bg-white/20 hover:text-white"}`}
+      onClick={handleToggle}
+      disabled={loading}
+    >
+      {loading ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : isSaved ? (
+        <BookmarkCheck className="w-4 h-4" />
+      ) : (
+        <Bookmark className="w-4 h-4" />
+      )}
+      {isSaved ? "Saved" : "Save to my account"}
+    </Button>
   );
 }
 
@@ -81,12 +133,7 @@ export default function TrackDetail() {
   const pct = isDelivered ? 100 : data.status === "pending" ? 5 : data.status === "picked_up" ? 20 : data.status === "in_transit" ? 55 : data.status === "customs_review" ? 70 : data.status === "out_for_delivery" ? 90 : 40;
 
   return (
-    <div className="bg-[#f8fafc] min-h-screen">
-      <Helmet>
-        <title>Tracking {data.trackingNumber} | Sinovera Transit Global</title>
-        <meta name="description" content={`Track shipment ${data.trackingNumber} — ${data.originCity ?? ''} to ${data.destinationCity ?? ''}. Current status: ${formatStatus(data.status)}.`} />
-        <meta name="robots" content="noindex" />
-      </Helmet>
+    <div className="bg-slate-50 min-h-screen">
       {/* Header bar */}
       <div className="bg-primary text-white py-10">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -98,9 +145,27 @@ export default function TrackDetail() {
               <div className="text-white/60 text-sm mb-1">Tracking Number</div>
               <h1 className="text-2xl md:text-3xl font-extrabold font-mono tracking-wider">{data.trackingNumber}</h1>
             </div>
-            <Badge className={`text-sm font-semibold px-4 py-2 border ${statusColor(data.status)} self-start sm:self-auto`}>
-              {data.customStatus ?? formatStatus(data.status)}
-            </Badge>
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge className={`text-sm font-semibold px-4 py-2 border ${statusColor(data.status)}`}>
+                {data.customStatus ?? formatStatus(data.status)}
+              </Badge>
+
+              {/* Save to account button — only for signed-in users */}
+              <Show when="signed-in">
+                <SaveShipmentButton trackingNumber={data.trackingNumber} />
+              </Show>
+              <Show when="signed-out">
+                <Link href="/sign-in">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-white/30 text-white hover:bg-white/20 hover:text-white"
+                  >
+                    <Bookmark className="w-4 h-4" /> Save to my account
+                  </Button>
+                </Link>
+              </Show>
+            </div>
           </div>
         </div>
       </div>
@@ -127,10 +192,17 @@ export default function TrackDetail() {
                       {[data.activeHold.city, data.activeHold.country].filter(Boolean).join(", ")}
                     </p>
                   )}
-                  <div className="mt-3">
+                  <div className="mt-3 flex gap-2">
                     <Link href="/contact">
                       <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">Contact Support</Button>
                     </Link>
+                    <Show when="signed-in">
+                      <Link href={`/portal/support?ref=${data.trackingNumber}`}>
+                        <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100">
+                          Support via Portal
+                        </Button>
+                      </Link>
+                    </Show>
                   </div>
                 </div>
               </div>
@@ -243,8 +315,15 @@ export default function TrackDetail() {
 
         <div className="text-center pt-4">
           <p className="text-sm text-muted-foreground mb-4">Need assistance with your shipment?</p>
-          <div className="flex justify-center gap-4">
-            <Link href="/contact"><Button variant="outline">Contact Support</Button></Link>
+          <div className="flex justify-center gap-4 flex-wrap">
+            <Show when="signed-in">
+              <Link href={`/portal/support?ref=${data.trackingNumber}`}>
+                <Button variant="outline">Contact Support via Portal</Button>
+              </Link>
+            </Show>
+            <Show when="signed-out">
+              <Link href="/contact"><Button variant="outline">Contact Support</Button></Link>
+            </Show>
             <Link href="/quote"><Button className="bg-secondary text-primary hover:bg-secondary/90 font-bold">New Quote</Button></Link>
           </div>
         </div>

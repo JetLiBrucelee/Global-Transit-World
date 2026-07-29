@@ -34,13 +34,13 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function DashboardPage() {
   const { data: stats } = useGetDashboardStats();
-  const { data: activity } = useGetDashboardRecentActivity({ params: { limit: 8 } });
+  const { data: activity } = useGetDashboardRecentActivity({ limit: 8 });
 
   const chartData = stats ? [
-    { name: 'Pending', value: stats.total_shipments - stats.active_shipments - stats.delivered_shipments, fill: STATUS_COLORS.pending },
-    { name: 'In Transit', value: stats.in_transit_shipments, fill: STATUS_COLORS.in_transit },
-    { name: 'Delivered', value: stats.delivered_shipments, fill: STATUS_COLORS.delivered },
-    { name: 'Active', value: stats.active_shipments, fill: STATUS_COLORS.processing },
+    { name: 'In Transit', value: stats.inTransit, fill: STATUS_COLORS.in_transit },
+    { name: 'Delivered', value: stats.delivered, fill: STATUS_COLORS.delivered },
+    { name: 'On Hold', value: stats.onHold, fill: STATUS_COLORS.held },
+    { name: 'Delayed', value: stats.delayed, fill: STATUS_COLORS.pending },
   ] : [];
 
   return (
@@ -66,12 +66,12 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <StatCard label="Total Shipments" value={stats?.total_shipments} icon={Package} color="bg-blue-50 text-blue-600" />
-        <StatCard label="Active" value={stats?.active_shipments} icon={Truck} color="bg-amber-50 text-amber-600" />
-        <StatCard label="In Transit" value={stats?.in_transit_shipments} icon={Truck} color="bg-orange-50 text-orange-600" />
-        <StatCard label="Delivered" value={stats?.delivered_shipments} icon={CheckCircle} color="bg-green-50 text-green-600" />
-        <StatCard label="Customers" value={stats?.total_customers} icon={Users} color="bg-purple-50 text-purple-600" />
-        <StatCard label="Pending Quotes" value={stats?.pending_quotes} icon={FileText} color="bg-red-50 text-red-600" />
+        <StatCard label="Total Shipments" value={stats?.totalShipments} icon={Package} color="bg-blue-50 text-blue-600" />
+        <StatCard label="In Transit" value={stats?.inTransit} icon={Truck} color="bg-amber-50 text-amber-600" />
+        <StatCard label="Delivered" value={stats?.delivered} icon={CheckCircle} color="bg-green-50 text-green-600" />
+        <StatCard label="On Hold" value={stats?.onHold} icon={Truck} color="bg-orange-50 text-orange-600" />
+        <StatCard label="Customers" value={stats?.totalCustomers} icon={Users} color="bg-purple-50 text-purple-600" />
+        <StatCard label="Quote Requests" value={stats?.totalQuoteRequests} icon={FileText} color="bg-red-50 text-red-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

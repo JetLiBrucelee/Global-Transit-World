@@ -17,6 +17,27 @@ router.get("/customers/me", requireAuth, async (req, res): Promise<void> => {
   res.json(customer);
 });
 
+// Self-registration endpoint — creates customer record for signed-in user (no staff required)
+router.post("/customers/me", requireAuth, async (req, res): Promise<void> => {
+  const auth = getAuth(req);
+  if (!auth?.userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const [existing] = await db.select().from(customersTable).where(eq(customersTable.clerkId, auth.userId)).limit(1);
+  if (existing) { res.json(existing); return; }
+
+  const body = req.body ?? {};
+  const email = body.email ?? `${auth.userId}@unknown.com`;
+  const [customer] = await db.insert(customersTable).values({
+    clerkId: auth.userId,
+    email,
+    firstName: body.firstName ?? "",
+    lastName: body.lastName ?? "",
+    phone: body.phone ?? null,
+    country: body.country ?? null,
+  }).returning();
+  res.status(201).json(customer);
+});
+
 router.patch("/customers/me", requireAuth, async (req, res): Promise<void> => {
   const auth = getAuth(req);
   if (!auth?.userId) { res.status(401).json({ error: "Unauthorized" }); return; }
@@ -67,12 +88,40 @@ router.post("/customers/me/saved-shipments", requireAuth, async (req, res): Prom
     customer = rows[0];
   }
 
-  const { shipmentId, nickname } = req.body;
-  if (!shipmentId) { res.status(400).json({ error: "shipmentId is required" }); return; }
+  const { shipmentId, trackingNumber, nickname } = req.body;
 
-  const [row] = await db.insert(savedShipmentsTable).values({ customerId: customer.id, shipmentId, nickname: nickname ?? null }).returning();
-  const [shipment] = await db.select().from(shipmentsTable).where(eq(shipmentsTable.id, shipmentId)).limit(1);
-  res.status(201).json({ ...row, shipment: shipment ?? null });
+  // Resolve to a confirmed UUID: accept a proper UUID directly, or look up by tracking number
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  let resolvedShipmentId: string;
+
+  if (shipmentId && uuidRegex.test(String(shipmentId))) {
+    // Already a valid UUID — use directly
+    resolvedShipmentId = String(shipmentId);
+  } else {
+    // Non-UUID shipmentId treated as tracking number, or explicit trackingNumber field
+    const tn: string | undefined = (shipmentId && !uuidRegex.test(String(shipmentId)))
+      ? String(shipmentId)
+      : (trackingNumber ? String(trackingNumber) : undefined);
+    if (!tn) { res.status(400).json({ error: "shipmentId or trackingNumber is required" }); return; }
+    const [found] = await db.select().from(shipmentsTable).where(eq(shipmentsTable.trackingNumber, tn)).limit(1);
+    if (!found) { res.status(404).json({ error: "Shipment not found" }); return; }
+    resolvedShipmentId = found.id;
+  }
+
+  // Prevent duplicate saves
+  const [existing] = await db.select().from(savedShipmentsTable)
+    .where(and(eq(savedShipmentsTable.customerId, customer.id), eq(savedShipmentsTable.shipmentId, resolvedShipmentId)))
+    .limit(1);
+  if (existing) {
+    const [existingShipment] = await db.select().from(shipmentsTable).where(eq(shipmentsTable.id, resolvedShipmentId)).limit(1);
+    res.status(200).json({ ...existing, shipment: existingShipment ?? null });
+    return;
+  }
+
+  const [row] = await db.insert(savedShipmentsTable).values({ customerId: customer.id, shipmentId: resolvedShipmentId, nickname: nickname ?? null }).returning();
+  const [savedShipment] = await db.select().from(shipmentsTable).where(eq(shipmentsTable.id, resolvedShipmentId)).limit(1);
+  res.status(201).json({ ...row, shipment: savedShipment ?? null });
 });
 
 router.delete("/customers/me/saved-shipments/:savedId", requireAuth, async (req, res): Promise<void> => {

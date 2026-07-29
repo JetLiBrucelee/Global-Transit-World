@@ -28,9 +28,9 @@ const STATUS_COLORS: Record<string, string> = {
 export default function ShipmentDetailPage({ id }: { id: string }) {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { data: shipment, isLoading } = useGetShipment(id, { query: { enabled: !!id } });
-  const { data: events } = useListTrackingEvents(id, { query: { enabled: !!id } });
-  const { data: holds } = useListHolds(id, { query: { enabled: !!id } });
+  const { data: shipment, isLoading } = useGetShipment(id, { query: { enabled: !!id, queryKey: getGetShipmentQueryKey(id) } });
+  const { data: events } = useListTrackingEvents(id, { query: { enabled: !!id, queryKey: getListTrackingEventsQueryKey(id) } });
+  const { data: holds } = useListHolds(id, { query: { enabled: !!id, queryKey: getListHoldsQueryKey(id) } });
 
   const updateShipment = useUpdateShipment();
   const addEvent = useAddTrackingEvent();
@@ -77,7 +77,7 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
   }
 
   function handleDeleteEvent(eventId: string) {
-    deleteEvent.mutate({ id: eventId }, {
+    deleteEvent.mutate({ id, eventId }, {
       onSuccess: () => {
         toast({ title: 'Event deleted' });
         qc.invalidateQueries({ queryKey: getListTrackingEventsQueryKey(id) });
@@ -98,7 +98,7 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
   }
 
   function handleReleaseHold(holdId: string) {
-    releaseHold.mutate({ id: holdId }, {
+    releaseHold.mutate({ id, holdId }, {
       onSuccess: () => {
         toast({ title: 'Hold released' });
         qc.invalidateQueries({ queryKey: getListHoldsQueryKey(id) });

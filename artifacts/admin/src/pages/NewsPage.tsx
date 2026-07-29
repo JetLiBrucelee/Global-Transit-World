@@ -55,7 +55,7 @@ export default function NewsPage() {
   function handleSave() {
     const data = { ...form, slug: form.slug || slugify(form.title ?? '') };
     if (editing) {
-      updateArticle.mutate({ id: editing.id, data }, {
+      updateArticle.mutate({ slug: editing.slug, data }, {
         onSuccess: () => {
           toast({ title: 'Article updated' });
           qc.invalidateQueries({ queryKey: getListNewsQueryKey() });
@@ -77,7 +77,7 @@ export default function NewsPage() {
 
   function handleDelete() {
     if (!deleteTarget) return;
-    deleteArticle.mutate({ id: deleteTarget }, {
+    deleteArticle.mutate({ slug: deleteTarget! }, {
       onSuccess: () => {
         toast({ title: 'Article deleted' });
         qc.invalidateQueries({ queryKey: getListNewsQueryKey() });
@@ -177,7 +177,7 @@ export default function NewsPage() {
                           onBlur={e => {
                             if (e.target.value !== item.value) {
                               upsertSection.mutate(
-                                { section: section.section, data: { section: section.section, items: [{ key: item.key, value: e.target.value }] } },
+                                { section: section.section, data: { items: [{ key: item.key, value: e.target.value }] } },
                                 { onSuccess: () => { toast({ title: 'Saved' }); qc.invalidateQueries({ queryKey: getListCmsContentQueryKey() }); } }
                               );
                             }
@@ -190,7 +190,7 @@ export default function NewsPage() {
                           onBlur={e => {
                             if (e.target.value !== item.value) {
                               upsertSection.mutate(
-                                { section: section.section, data: { section: section.section, items: [{ key: item.key, value: e.target.value }] } },
+                                { section: section.section, data: { items: [{ key: item.key, value: e.target.value }] } },
                                 { onSuccess: () => { toast({ title: 'Saved' }); qc.invalidateQueries({ queryKey: getListCmsContentQueryKey() }); } }
                               );
                             }
