@@ -14,9 +14,16 @@ localPort = 19952
 run = "pnpm --filter @workspace/sinovera run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/sinovera", "run", "build" ]
 serve = "static"
 publicDir = "artifacts/sinovera/dist/public"
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/sinovera", "run", "build"]
+
+[services.production.build.env]
+PORT = "19952"
+BASE_PATH = "/"
+NODE_ENV = "production"
 
 [[services.production.rewrites]]
 from = "/*"

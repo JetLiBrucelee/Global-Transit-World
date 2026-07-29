@@ -7,20 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
-  Plane, Anchor, Train, Truck, ShieldCheck, Package,
-  ArrowRight, CheckCircle, Star, ChevronRight, MapPin, Clock, BarChart3, Globe
+  ArrowRight, CheckCircle, Star, ChevronRight, MapPin, Clock, BarChart3, Globe, ShieldCheck, Package
 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
 const SERVICES = [
-  { slug: "air-freight", icon: Plane, title: "Air Freight", desc: "Express delivery to 180+ countries. Fastest transit times with real-time tracking." },
-  { slug: "ocean-freight", icon: Anchor, title: "Ocean Freight", desc: "Cost-effective FCL & LCL solutions. Major ports across Asia, Europe & Americas." },
-  { slug: "rail-freight", icon: Train, title: "Rail Freight", desc: "China-Europe rail corridor. 14–18 days across the Eurasian land bridge." },
-  { slug: "road-freight", icon: Truck, title: "Road Freight", desc: "Cross-border trucking for Southeast Asia and Central Asia routes." },
-  { slug: "customs-clearance", icon: ShieldCheck, title: "Customs Clearance", desc: "End-to-end customs brokerage. Compliant documentation for every destination." },
-  { slug: "warehousing", icon: Package, title: "Warehousing & FBA", desc: "Strategic bonded warehouses in Shenzhen, Yiwu, Ningbo & Shanghai." },
+  { slug: "air-freight", icon: "/icons/3d-air-freight.png", title: "Air Freight", desc: "Express delivery to 180+ countries. Fastest transit times with real-time tracking." },
+  { slug: "ocean-freight", icon: "/icons/3d-ocean-freight.png", title: "Ocean Freight", desc: "Cost-effective FCL & LCL solutions. Major ports across Asia, Europe & Americas." },
+  { slug: "rail-freight", icon: "/icons/3d-rail-freight.png", title: "Rail Freight", desc: "China-Europe rail corridor. 14–18 days across the Eurasian land bridge." },
+  { slug: "road-freight", icon: "/icons/3d-road-freight.png", title: "Road Freight", desc: "Cross-border trucking for Southeast Asia and Central Asia routes." },
+  { slug: "customs-clearance", icon: "/icons/3d-customs-clearance.png", title: "Customs Clearance", desc: "End-to-end customs brokerage. Compliant documentation for every destination." },
+  { slug: "warehousing", icon: "/icons/3d-warehousing.png", title: "Warehousing & FBA", desc: "Strategic bonded warehouses in Shenzhen, Yiwu, Ningbo & Shanghai." },
 ];
 
 const TESTIMONIALS = [
@@ -174,13 +173,12 @@ export default function Home() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {SERVICES.map((svc) => {
-              const Icon = svc.icon;
               return (
                 <motion.div key={svc.slug} variants={fadeUp}>
                   <Link href={`/services/${svc.slug}`} data-testid={`link-service-${svc.slug}`}>
                     <Card className="p-6 h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border group">
-                      <div className="w-12 h-12 rounded-lg bg-primary/5 flex items-center justify-center mb-4 group-hover:bg-secondary/20 transition-colors">
-                        <Icon className="w-6 h-6 text-primary" />
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <img src={svc.icon} alt={svc.title} className="w-14 h-14 object-contain drop-shadow-md" />
                       </div>
                       <h3 className="font-bold text-lg text-primary mb-2">{svc.title}</h3>
                       <p className="text-muted-foreground text-sm leading-relaxed">{svc.desc}</p>
