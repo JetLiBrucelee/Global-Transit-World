@@ -3,18 +3,11 @@ import { SITE_URL } from "@/lib/seo";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Search, Package, MapPin, Clock, CheckCircle } from "lucide-react";
+import { Search, Clock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-const DEMO_NUMBERS = [
-  { number: "STG-CN-2026-84XH92", route: "Shenzhen → New York", status: "In Transit" },
-  { number: "STG-CN-2026-KP73MQ", route: "Yiwu → London", status: "Customs Review" },
-  { number: "STG-CN-2026-ZT55WR", route: "Foshan → Dubai", status: "Delivered" },
-  { number: "STG-CN-2026-NX28BF", route: "Ningbo → Warsaw", status: "In Transit" },
-];
 
 export default function Track() {
   const [value, setValue] = useState("");
@@ -68,64 +61,30 @@ export default function Track() {
 
       {/* Body */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Demo numbers */}
-          <div className="md:col-span-2">
-            <h2 className="text-xl font-bold text-primary mb-6">Try a Demo Tracking Number</h2>
-            <div className="space-y-3">
-              {DEMO_NUMBERS.map((item) => (
-                <Card
-                  key={item.number}
-                  className="p-4 flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all"
-                  onClick={() => navigate(`/track/${item.number}`)}
-                  data-testid={`demo-${item.number}`}
-                >
-                  <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center shrink-0">
-                    <Package className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-mono font-bold text-primary text-sm">{item.number}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" /> {item.route}
-                    </div>
-                  </div>
-                  <Badge
-                    variant={item.status === "Delivered" ? "default" : "outline"}
-                    className={item.status === "Delivered" ? "bg-green-100 text-green-800 border-green-200" : ""}
-                  >
-                    {item.status}
-                  </Badge>
-                </Card>
-              ))}
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <Card className="p-6">
+            <h3 className="font-bold text-primary mb-4 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-secondary" /> Tracking Number Format
+            </h3>
+            <div className="font-mono text-sm bg-slate-50 border rounded-lg p-3 text-center font-bold tracking-widest text-primary mb-3">
+              STG-CN-2026-XXXXXX
             </div>
-          </div>
-
-          {/* Info sidebar */}
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="font-bold text-primary mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-secondary" /> Tracking Number Format
-              </h3>
-              <div className="font-mono text-sm bg-slate-50 border rounded-lg p-3 text-center font-bold tracking-widest text-primary mb-3">
-                STG-CN-2026-XXXXXX
-              </div>
-              <ul className="text-sm text-muted-foreground space-y-1.5">
-                <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Prefix: STG (Sinovera Transit Global)</li>
-                <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Origin: CN (China)</li>
-                <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Year: 4-digit year</li>
-                <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Code: 6 alphanumeric characters</li>
-              </ul>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-bold text-primary mb-4">Need Help?</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Can't find your tracking number? Contact our support team and we'll look it up for you.
-              </p>
-              <Button variant="outline" className="w-full" asChild>
-                <a href="/contact">Contact Support</a>
-              </Button>
-            </Card>
-          </div>
+            <ul className="text-sm text-muted-foreground space-y-1.5">
+              <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Prefix: STG (Sinovera Transit Global)</li>
+              <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Origin: CN (China)</li>
+              <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Year: 4-digit year</li>
+              <li className="flex items-start gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />Code: 6 alphanumeric characters</li>
+            </ul>
+          </Card>
+          <Card className="p-6">
+            <h3 className="font-bold text-primary mb-4">Need Help?</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Can't find your tracking number? Contact our support team and we'll look it up for you.
+            </p>
+            <Button variant="outline" className="w-full" asChild>
+              <a href="/contact">Contact Support</a>
+            </Button>
+          </Card>
         </div>
       </div>
     </div>

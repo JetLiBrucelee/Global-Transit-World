@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useGetCmsSection, useListNotifications } from "@workspace/api-client-react";
-import { Menu, X, ChevronDown, Package, ShieldCheck, Globe, Anchor, Plane, Truck, Train, Bell, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
+import { Menu, X, ChevronDown, Bell, LogOut, Settings, LayoutDashboard, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Show, useClerk, useUser } from "@clerk/react";
 
@@ -52,56 +52,56 @@ export function Navbar() {
             <div className="absolute top-full left-1/2 -translate-x-1/2 w-[600px] bg-white border shadow-xl rounded-lg p-6 grid grid-cols-2 gap-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none group-hover:pointer-events-auto transform translate-y-2 group-hover:translate-y-0">
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Core Freight</h3>
-                <Link href="/services/air-freight" className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors">
-                  <Plane className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <Link href="/services/air-freight" className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors group/item">
+                  <img src="/icons/3d-air-freight.png" alt="Air Freight" className="w-10 h-10 shrink-0 object-contain drop-shadow-md group-hover/item:scale-110 transition-transform" />
                   <div>
                     <div className="font-semibold text-primary">Air Freight</div>
-                    <div className="text-xs text-muted-foreground mt-1">Express global delivery</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Express global delivery</div>
                   </div>
                 </Link>
-                <Link href="/services/ocean-freight" className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors">
-                  <Anchor className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <Link href="/services/ocean-freight" className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors group/item">
+                  <img src="/icons/3d-ocean-freight.png" alt="Ocean Freight" className="w-10 h-10 shrink-0 object-contain drop-shadow-md group-hover/item:scale-110 transition-transform" />
                   <div>
                     <div className="font-semibold text-primary">Ocean Freight</div>
-                    <div className="text-xs text-muted-foreground mt-1">Cost-effective FCL & LCL</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Cost-effective FCL & LCL</div>
                   </div>
                 </Link>
-                <Link href="/services/rail-freight" className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors">
-                  <Train className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <Link href="/services/rail-freight" className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors group/item">
+                  <img src="/icons/3d-rail-freight.png" alt="Rail Freight" className="w-10 h-10 shrink-0 object-contain drop-shadow-md group-hover/item:scale-110 transition-transform" />
                   <div>
                     <div className="font-semibold text-primary">Rail Freight</div>
-                    <div className="text-xs text-muted-foreground mt-1">Eurasian land bridge</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Eurasian land bridge</div>
                   </div>
                 </Link>
-                <Link href="/services/road-freight" className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors">
-                  <Truck className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <Link href="/services/road-freight" className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors group/item">
+                  <img src="/icons/3d-road-freight.png" alt="Road Freight" className="w-10 h-10 shrink-0 object-contain drop-shadow-md group-hover/item:scale-110 transition-transform" />
                   <div>
                     <div className="font-semibold text-primary">Road Freight</div>
-                    <div className="text-xs text-muted-foreground mt-1">Cross-border trucking</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Cross-border trucking</div>
                   </div>
                 </Link>
               </div>
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Logistics Solutions</h3>
-                <Link href="/services/customs-clearance" className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors">
-                  <ShieldCheck className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <Link href="/services/customs-clearance" className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors group/item">
+                  <img src="/icons/3d-customs-clearance.png" alt="Customs Clearance" className="w-10 h-10 shrink-0 object-contain drop-shadow-md group-hover/item:scale-110 transition-transform" />
                   <div>
                     <div className="font-semibold text-primary">Customs Clearance</div>
-                    <div className="text-xs text-muted-foreground mt-1">Hassle-free import/export</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Hassle-free import/export</div>
                   </div>
                 </Link>
-                <Link href="/services/warehousing" className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors">
-                  <Package className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <Link href="/services/warehousing" className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors group/item">
+                  <img src="/icons/3d-warehousing.png" alt="Warehousing" className="w-10 h-10 shrink-0 object-contain drop-shadow-md group-hover/item:scale-110 transition-transform" />
                   <div>
                     <div className="font-semibold text-primary">Warehousing</div>
-                    <div className="text-xs text-muted-foreground mt-1">Secure storage & fulfillment</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Secure storage & fulfillment</div>
                   </div>
                 </Link>
-                <Link href="/services/international-shipping" className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors">
-                  <Globe className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <Link href="/services/international-shipping" className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-md transition-colors group/item">
+                  <img src="/icons/3d-intl-shipping.png" alt="Intl. Shipping" className="w-10 h-10 shrink-0 object-contain drop-shadow-md group-hover/item:scale-110 transition-transform" />
                   <div>
                     <div className="font-semibold text-primary">Intl. Shipping</div>
-                    <div className="text-xs text-muted-foreground mt-1">Door-to-door global network</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Door-to-door global network</div>
                   </div>
                 </Link>
                 <div className="pt-4 mt-4 border-t border-border/50">

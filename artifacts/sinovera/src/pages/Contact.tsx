@@ -10,12 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, Clock, CheckCircle } from "lucide-react";
-import { SiWechat } from "react-icons/si";
 
 const OFFICES = [
   { city: "Shenzhen (HQ)", address: "128 Logistics Blvd, Qianhai Free Trade Zone, Shenzhen 518055", phone: "+86 755 1234 5678", email: "hq@sinoveratransit.com" },
-  { city: "Shanghai", address: "Tower B, Waigaoqiao FTZ, Pudong, Shanghai 200131", phone: "+86 21 6789 0123", email: "shanghai@sinoveratransit.com" },
-  { city: "Yiwu", address: "International Trade City, Zone 2, Yiwu, Zhejiang 322000", phone: "+86 579 8765 4321", email: "yiwu@sinoveratransit.com" },
 ];
 
 export default function Contact() {
@@ -39,7 +36,7 @@ export default function Contact() {
     <div>
       <Helmet>
         <title>Contact Us | Sinovera Transit Global</title>
-        <meta name="description" content="Get in touch with Sinovera Transit Global's logistics experts. Available 24/7 for freight quotes, shipment enquiries, and customs support. Offices in Shenzhen, Shanghai, and Yiwu." />
+        <meta name="description" content="Get in touch with Sinovera Transit Global's logistics experts. Available 24/7 for freight quotes, shipment enquiries, and customs support. Headquartered in Shenzhen, China." />
         <meta property="og:title" content="Contact Sinovera Transit Global" />
         <meta property="og:description" content="24/7 logistics support. Offices in Shenzhen, Shanghai and Yiwu. Call +86 400 123 4567 or email us." />
         <meta property="og:type" content="website" />
@@ -125,13 +122,6 @@ export default function Contact() {
                     <div>
                       <div className="font-semibold">{cmsVal("email_support", "support@sinoveratransit.com")}</div>
                       <div className="text-muted-foreground text-xs">General enquiries</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <SiWechat className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-semibold">sinoveratransit</div>
-                      <div className="text-muted-foreground text-xs">WeChat ID</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

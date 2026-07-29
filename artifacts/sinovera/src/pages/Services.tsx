@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { SITE_URL } from "@/lib/seo";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { Plane, Anchor, Train, Truck, ShieldCheck, Package, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 const SERVICES = [
   {
     slug: "air-freight",
-    icon: Plane,
+    icon: "/icons/3d-air-freight.png",
     title: "Air Freight",
     tagline: "Fastest Global Delivery",
     desc: "Express air cargo solutions connecting China to 180+ countries. Ideal for time-sensitive, high-value, or perishable goods. We partner with IATA-accredited airlines for daily departures from Shenzhen, Shanghai, Beijing, and Guangzhou.",
@@ -19,7 +19,7 @@ const SERVICES = [
   },
   {
     slug: "ocean-freight",
-    icon: Anchor,
+    icon: "/icons/3d-ocean-freight.png",
     title: "Ocean Freight",
     tagline: "Cost-Effective FCL & LCL",
     desc: "Full Container Load (FCL) and Less than Container Load (LCL) services from all major Chinese ports. Competitive rates on high-volume lanes to Europe, Americas, Middle East, and Southeast Asia.",
@@ -28,7 +28,7 @@ const SERVICES = [
   },
   {
     slug: "rail-freight",
-    icon: Train,
+    icon: "/icons/3d-rail-freight.png",
     title: "Rail Freight",
     tagline: "Eurasian Land Bridge",
     desc: "China-Europe rail corridor connecting Yiwu, Chengdu, and Chongqing to 40+ European cities via Kazakhstan, Russia, and Poland. The cost-effective middle ground between air speed and ocean economics.",
@@ -37,7 +37,7 @@ const SERVICES = [
   },
   {
     slug: "road-freight",
-    icon: Truck,
+    icon: "/icons/3d-road-freight.png",
     title: "Road Freight",
     tagline: "Cross-Border Trucking",
     desc: "Door-to-door trucking across Southeast Asia, Central Asia, and the Middle East. We operate a fleet of bonded trucks with GPS tracking and experienced drivers for border-crossing compliance.",
@@ -46,7 +46,7 @@ const SERVICES = [
   },
   {
     slug: "customs-clearance",
-    icon: ShieldCheck,
+    icon: "/icons/3d-customs-clearance.png",
     title: "Customs Clearance",
     tagline: "End-to-End Brokerage",
     desc: "Licensed customs brokers handling China export and import clearance across 40+ destination countries. We manage HS classification, duty optimization, ATA Carnets, and quarantine inspections.",
@@ -55,7 +55,7 @@ const SERVICES = [
   },
   {
     slug: "warehousing",
-    icon: Package,
+    icon: "/icons/3d-warehousing.png",
     title: "Warehousing & FBA Prep",
     tagline: "Strategic China Hubs",
     desc: "Bonded and non-bonded warehousing across Shenzhen, Yiwu, Ningbo, and Shanghai. Amazon FBA prep, kitting, relabeling, quality inspection, and consolidation services for e-commerce sellers.",
@@ -103,7 +103,6 @@ export default function Services() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {SERVICES.map((svc, i) => {
-              const Icon = svc.icon;
               return (
                 <motion.div
                   key={svc.slug}
@@ -114,8 +113,8 @@ export default function Services() {
                 >
                   <Card className="p-6 h-full flex flex-col hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
                     <div className="flex items-start gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-xl bg-[#f5a623]/15 flex items-center justify-center shrink-0">
-                        <Icon className="w-7 h-7 text-[#f5a623]" />
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0">
+                        <img src={svc.icon} alt={svc.title} className="w-14 h-14 object-contain drop-shadow-md" />
                       </div>
                       <div>
                         <div className="text-xs font-semibold text-secondary uppercase tracking-wider mb-1">{svc.tagline}</div>
