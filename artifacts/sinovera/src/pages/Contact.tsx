@@ -24,12 +24,28 @@ export default function Contact() {
   const cmsVal = (key: string, fallback: string) =>
     (companyCms ?? []).find(i => i.key === key)?.value ?? fallback;
 
+  const [error, setError] = useState("");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 800));
-    setSent(true);
-    setSubmitting(false);
+    setError("");
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: form.name, email: form.email, subject: form.subject, message: form.message }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to send");
+      }
+      setSent(true);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -97,6 +113,9 @@ export default function Contact() {
                         data-testid="input-message"
                       />
                     </div>
+                    {error && (
+                      <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</div>
+                    )}
                     <Button type="submit" disabled={submitting} className="w-full bg-secondary text-primary font-bold hover:bg-secondary/90" data-testid="button-send-message">
                       {submitting ? "Sending..." : "Send Message"}
                     </Button>

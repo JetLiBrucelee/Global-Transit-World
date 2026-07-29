@@ -4,6 +4,7 @@ import { eq, and, or, ilike, desc, count, sql } from "drizzle-orm";
 import { requireAuth, requireUserRecord, requireStaff } from "../lib/auth";
 import { writeAuditLog } from "../lib/audit";
 import { generateTrackingNumber } from "../lib/tracking";
+import { sendShipmentCreatedToSender, sendShipmentCreatedToReceiver } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -144,6 +145,35 @@ router.post("/shipments", requireAuth, requireUserRecord, requireStaff, async (r
   });
 
   res.status(201).json(shipment);
+
+  // Send confirmation emails (fire-and-forget — don't block the response)
+  const origin = `${shipment.originCity}, ${shipment.originCountry ?? "CN"}`;
+  const destination = `${shipment.destinationCity}, ${shipment.destinationCountry}`;
+  const estDelivery = shipment.estimatedDelivery?.toISOString() ?? null;
+  if (shipment.receiverEmail) {
+    sendShipmentCreatedToReceiver({
+      email: shipment.receiverEmail,
+      receiverName: shipment.receiverName,
+      senderName: shipment.senderName,
+      trackingNumber: shipment.trackingNumber,
+      origin,
+      destination,
+      shippingMethod: shipment.shippingMethod,
+      estimatedDelivery: estDelivery,
+    }).catch((e: Error) => console.error("[email] receiver confirm failed:", e.message));
+  }
+  if (shipment.senderEmail) {
+    sendShipmentCreatedToSender({
+      email: shipment.senderEmail,
+      senderName: shipment.senderName,
+      receiverName: shipment.receiverName,
+      trackingNumber: shipment.trackingNumber,
+      origin,
+      destination,
+      shippingMethod: shipment.shippingMethod,
+      estimatedDelivery: estDelivery,
+    }).catch((e: Error) => console.error("[email] sender confirm failed:", e.message));
+  }
 });
 
 // ── Get shipment detail ───────────────────────────────────────────────────────

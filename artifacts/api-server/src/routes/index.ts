@@ -12,6 +12,7 @@ import notificationsRouter from "./notifications";
 import auditRouter from "./audit";
 import dashboardRouter from "./dashboard";
 import chatRouter from "./chat";
+import contactRouter from "./contact";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(notificationsRouter);
 router.use(auditRouter);
 router.use(dashboardRouter);
 router.use(chatRouter);
+router.use(contactRouter);
 
 export default router;

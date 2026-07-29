@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
-import { db, shipmentsTable, trackingEventsTable, holdsTable } from "@workspace/db";
+import { db, shipmentsTable, trackingEventsTable, holdsTable, customersTable, notificationsTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 import { requireAuth, requireUserRecord, requireStaff } from "../lib/auth";
 import { writeAuditLog } from "../lib/audit";
 import { maskName } from "../lib/tracking";
+import { sendTrackingUpdate } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -109,6 +110,58 @@ router.post("/shipments/:id/tracking-events", requireAuth, requireUserRecord, re
   });
 
   res.status(201).json(event);
+
+  // Email notifications for public events (fire-and-forget)
+  if (event.isPublic) {
+    (async () => {
+      try {
+        const [shipment] = await db.select().from(shipmentsTable).where(eq(shipmentsTable.id, id)).limit(1);
+        if (!shipment) return;
+
+        const emailPayload = {
+          trackingNumber: shipment.trackingNumber,
+          status: event.status,
+          description: event.description,
+          location: event.location ?? event.city ?? null,
+          eventTime: event.eventTime.toISOString(),
+        };
+
+        const recipients: Array<{ email: string; name: string }> = [];
+
+        // Receiver email (always notify if present)
+        if (shipment.receiverEmail) {
+          recipients.push({ email: shipment.receiverEmail, name: shipment.receiverName });
+        }
+
+        // Customer linked to shipment — check notifyEmail preference
+        if (shipment.customerId) {
+          const [customer] = await db.select().from(customersTable)
+            .where(eq(customersTable.id, shipment.customerId)).limit(1);
+          if (customer?.email && customer.notifyEmail) {
+            // Avoid duplicate if receiver email already matches
+            if (customer.email !== shipment.receiverEmail) {
+              recipients.push({ email: customer.email, name: customer.name ?? shipment.receiverName });
+            }
+            // Create in-app notification
+            await db.insert(notificationsTable).values({
+              customerId: customer.id,
+              shipmentId: shipment.id,
+              title: `Shipment update: ${event.status.replace(/_/g, " ")}`,
+              message: `${event.description}${event.location ? ` — ${event.location}` : ""}`,
+              type: "tracking_update",
+              channel: "in_app",
+            }).catch(() => {});
+          }
+        }
+
+        await Promise.all(
+          recipients.map(r => sendTrackingUpdate({ ...emailPayload, email: r.email, name: r.name }))
+        );
+      } catch (e: any) {
+        console.error("[email] tracking update failed:", e.message);
+      }
+    })();
+  }
 });
 
 // ── Update tracking event ─────────────────────────────────────────────────────
