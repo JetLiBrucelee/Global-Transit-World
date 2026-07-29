@@ -1,4 +1,6 @@
+import { Helmet } from "react-helmet-async";
 import { useRoute, Link } from "wouter";
+import { SITE_URL } from "@/lib/seo";
 import { motion } from "framer-motion";
 import { useGetCmsSection } from "@workspace/api-client-react";
 import { Badge } from "@/components/ui/badge";
@@ -190,6 +192,15 @@ export default function Legal() {
 
   return (
     <div>
+      <Helmet>
+        <title>{meta.title} | Sinovera Transit Global</title>
+        <meta name="description" content={`Read the Sinovera Transit Global ${meta.title}. Governing our freight forwarding services for shipments from China worldwide.`} />
+        <link rel="canonical" href={`${SITE_URL}/legal/${slug}`} />
+        <meta property="og:title" content={`${meta.title} — Sinovera Transit Global`} />
+        <meta property="og:description" content={`Read the Sinovera Transit Global ${meta.title}. Governing our freight forwarding services for shipments from China worldwide.`} />
+        <meta property="og:url" content={`${SITE_URL}/legal/${slug}`} />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       {/* Header */}
       <div className="bg-primary text-white py-16">
         <div className="container mx-auto px-4 max-w-3xl">

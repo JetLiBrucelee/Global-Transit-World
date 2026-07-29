@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
@@ -29,6 +30,8 @@ export default function News() {
         <meta property="og:title" content="News & Updates — Sinovera Transit Global" />
         <meta property="og:description" content="Latest freight industry news, trade regulations, and company announcements from STG." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/news`} />
+        <link rel="canonical" href={`${SITE_URL}/news`} />
       </Helmet>
       {/* Hero */}
       <div className="bg-primary text-white py-20">

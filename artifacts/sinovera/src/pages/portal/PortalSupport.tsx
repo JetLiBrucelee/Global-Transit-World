@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@clerk/react";
@@ -87,6 +88,11 @@ export default function PortalSupport() {
 
   return (
     <PortalLayout title="Contact Support">
+      <Helmet>
+        <title>Contact Support | Sinovera Transit Global</title>
+        <meta name="description" content="Submit a support request to the Sinovera Transit Global team for help with your shipments or account." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Card className="p-6">

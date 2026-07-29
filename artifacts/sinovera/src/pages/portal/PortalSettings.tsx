@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
 import { useUser, useClerk, useAuth } from "@clerk/react";
 import { CheckCircle, User, Bell, Lock, AlertCircle } from "lucide-react";
@@ -95,6 +96,11 @@ export default function PortalSettings() {
 
   return (
     <PortalLayout title="Profile & Settings">
+      <Helmet>
+        <title>Profile & Settings | Sinovera Transit Global</title>
+        <meta name="description" content="Update your profile, contact details, and notification preferences in the Sinovera Transit Global customer portal." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="space-y-6 max-w-2xl">
 
         {/* Profile form */}

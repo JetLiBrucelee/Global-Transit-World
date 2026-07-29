@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { format } from "date-fns";
 import { Bell, BellOff, CheckCheck, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -42,6 +43,11 @@ export default function Notifications() {
 
   return (
     <PortalLayout title="Notifications">
+      <Helmet>
+        <title>Notifications | Sinovera Transit Global</title>
+        <meta name="description" content="Your shipment status alerts and system notifications from Sinovera Transit Global." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {/* Header actions */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">

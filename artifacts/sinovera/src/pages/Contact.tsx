@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useGetCmsSection } from "@workspace/api-client-react";
@@ -42,6 +43,8 @@ export default function Contact() {
         <meta property="og:title" content="Contact Sinovera Transit Global" />
         <meta property="og:description" content="24/7 logistics support. Offices in Shenzhen, Shanghai and Yiwu. Call +86 400 123 4567 or email us." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/contact`} />
+        <link rel="canonical" href={`${SITE_URL}/contact`} />
       </Helmet>
       {/* Hero */}
       <div className="bg-primary text-white py-20">

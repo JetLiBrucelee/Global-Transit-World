@@ -134,6 +134,13 @@ export default function TrackDetail() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
+      <Helmet>
+        <title>Tracking {trackingNumber} | Sinovera Transit Global</title>
+        <meta name="description" content={`Real-time shipment status for ${trackingNumber}. View current location, transit events, and estimated delivery.`} />
+        <meta name="robots" content="noindex, follow" />
+        <meta property="og:title" content={`Shipment ${trackingNumber} — Sinovera Transit Global`} />
+        <meta property="og:description" content={`Real-time tracking for shipment ${trackingNumber} via Sinovera Transit Global.`} />
+      </Helmet>
       {/* Header bar */}
       <div className="bg-primary text-white py-10">
         <div className="container mx-auto px-4 max-w-4xl">

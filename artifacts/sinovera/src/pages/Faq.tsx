@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetCmsSection } from "@workspace/api-client-react";
@@ -113,6 +114,8 @@ export default function Faq() {
         <meta property="og:title" content="FAQ — Sinovera Transit Global" />
         <meta property="og:description" content="Everything you need to know about freight forwarding, tracking, customs, and STG services." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/faq`} />
+        <link rel="canonical" href={`${SITE_URL}/faq`} />
       </Helmet>
       {/* Hero */}
       <div className="bg-primary text-white py-20">

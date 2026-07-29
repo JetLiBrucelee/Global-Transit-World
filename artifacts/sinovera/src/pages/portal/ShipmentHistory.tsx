@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { Link } from "wouter";
 import { format } from "date-fns";
@@ -81,6 +82,11 @@ export default function ShipmentHistory() {
 
   return (
     <PortalLayout title="My Shipments">
+      <Helmet>
+        <title>My Shipments | Sinovera Transit Global</title>
+        <meta name="description" content="Browse and manage all your saved shipments in the Sinovera Transit Global customer portal." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {/* Filters */}
       <Card className="p-4 mb-5">
         <div className="flex flex-col sm:flex-row gap-3">

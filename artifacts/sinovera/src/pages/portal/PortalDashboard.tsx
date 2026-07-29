@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useUser } from "@clerk/react";
 import { Link } from "wouter";
 import { format } from "date-fns";
@@ -55,6 +56,11 @@ export default function PortalDashboard() {
 
   return (
     <PortalLayout>
+      <Helmet>
+        <title>My Dashboard | Sinovera Transit Global</title>
+        <meta name="description" content="View your saved shipments, notifications, and account summary in the Sinovera Transit Global customer portal." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {/* Welcome banner */}
       <div className="bg-primary text-white rounded-xl p-6 mb-6">
         <div className="flex items-start justify-between gap-4">

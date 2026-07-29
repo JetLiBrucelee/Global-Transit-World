@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useGetCmsSection, useListNews } from "@workspace/api-client-react";
@@ -91,6 +92,8 @@ export default function Home() {
         <meta property="og:title" content="Sinovera Transit Global — International Freight Forwarding from China" />
         <meta property="og:description" content="Fast, reliable shipments from China to 180+ countries. Air freight, ocean FCL/LCL, rail, road, and customs clearance." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <link rel="canonical" href={SITE_URL} />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
       {/* Hero */}

@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,8 @@ export default function About() {
         <meta property="og:title" content="About Sinovera Transit Global" />
         <meta property="og:description" content="AEO-certified, FIATA-member freight forwarder from Shenzhen. 15+ years connecting China to the world." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/about`} />
+        <link rel="canonical" href={`${SITE_URL}/about`} />
       </Helmet>
       {/* Hero */}
       <div className="bg-primary text-white py-20">

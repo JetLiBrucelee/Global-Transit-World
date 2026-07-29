@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -103,6 +104,8 @@ export default function Quote() {
         <meta property="og:title" content="Free Freight Quote — Sinovera Transit Global" />
         <meta property="og:description" content="Get a competitive China freight quote in under 2 hours. Air, ocean, rail, road and customs clearance." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/quote`} />
+        <link rel="canonical" href={`${SITE_URL}/quote`} />
       </Helmet>
       {/* Header */}
       <div className="bg-gradient-to-br from-[#0f172a] via-[#1a2744] to-[#1e3a6e] text-white py-20 relative overflow-hidden">

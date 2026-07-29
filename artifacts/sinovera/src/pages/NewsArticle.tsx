@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { useRoute, Link } from "wouter";
 import { motion } from "framer-motion";
 import { useGetNewsArticle, useListNews } from "@workspace/api-client-react";
@@ -54,6 +55,8 @@ export default function NewsArticle() {
         <meta property="og:description" content={article.excerpt ?? article.content?.slice(0, 160) ?? ''} />
         <meta property="og:type" content="article" />
         {article.publishedAt && <meta property="article:published_time" content={article.publishedAt} />}
+        <meta property="og:url" content={`${SITE_URL}/news/${slug}`} />
+        <link rel="canonical" href={`${SITE_URL}/news/${slug}`} />
       </Helmet>
       {/* Header */}
       <div className="bg-primary text-white py-16">

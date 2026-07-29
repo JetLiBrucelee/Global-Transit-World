@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
@@ -33,6 +34,8 @@ export default function Track() {
         <meta property="og:title" content="Shipment Tracking — Sinovera Transit Global" />
         <meta property="og:description" content="Real-time tracking for all STG shipments from China to 180+ countries." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/track`} />
+        <link rel="canonical" href={`${SITE_URL}/track`} />
       </Helmet>
       {/* Header */}
       <div className="bg-primary text-white py-16">

@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "@/lib/seo";
 import { useRoute, Link } from "wouter";
 import { motion } from "framer-motion";
 import { Plane, Anchor, Train, Truck, ShieldCheck, Package, CheckCircle, ArrowRight, ChevronLeft } from "lucide-react";
@@ -126,6 +127,8 @@ export default function ServiceDetail() {
         <meta property="og:title" content={`${svc.title} — Sinovera Transit Global`} />
         <meta property="og:description" content={svc.heroDesc} />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/services/${slug}`} />
+        <link rel="canonical" href={`${SITE_URL}/services/${slug}`} />
       </Helmet>
       {/* Hero */}
       <div className="bg-primary text-white py-20">
