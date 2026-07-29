@@ -1,0 +1,631 @@
+Build Sinovera Transit Global
+
+I want you to build a world-class international logistics and shipment tracking platform called Sinovera Transit Global (STG).
+
+This is not a demo project or a simple tracking website. Build it as if it is a real international logistics company headquartered in China that ships parcels, freight, cargo and documents from China to every country in the world.
+
+The website must look like a premium enterprise logistics platform, with a modern, trustworthy design, smooth animations, professional typography, excellent mobile responsiveness, and high performance.
+
+Do not copy the branding, design, colours, layout, icons, tracking pages or logo of FedEx, DHL, UPS, USPS, China Post, EMS, Cainiao or any existing logistics company.
+
+⸻
+
+Brand
+
+Company Name:
+
+Sinovera Transit Global
+
+Short Name:
+
+STG
+
+Tagline:
+
+Delivering Beyond Borders.
+
+Mission:
+
+To provide secure, transparent and reliable international shipping from China to customers across the globe.
+
+⸻
+
+Website Pages
+
+Build these pages professionally.
+
+• Home
+
+• Track Shipment
+
+• Services
+
+• Air Freight
+
+• Ocean Freight
+
+• Road Freight
+
+• Rail Freight
+
+• Customs Clearance
+
+• Warehousing
+
+• International Shipping
+
+• Request Quote
+
+• About Us
+
+• Careers
+
+• Contact
+
+• FAQ
+
+• News
+
+• Privacy Policy
+
+• Terms & Conditions
+
+• Shipping Policy
+
+• Restricted Items
+
+• Claims
+
+• Cookie Policy
+
+Everything should be editable from the admin dashboard.
+
+⸻
+
+Homepage
+
+The homepage should include
+
+• Premium hero section
+
+• Large tracking search box
+
+• Quick quote request
+
+• Company introduction
+
+• Freight services
+
+• Countries served
+
+• Why choose Sinovera
+
+• Shipment process
+
+• Statistics section
+
+• Customer testimonials
+
+• Global coverage map
+
+• Contact section
+
+• Newsletter
+
+• Professional footer
+
+⸻
+
+Tracking System
+
+Create a completely custom tracking system.
+
+Tracking numbers should look like
+
+STG-CN-2026-84XH92
+
+Every shipment should have its own tracking page.
+
+The tracking page should display
+
+Tracking Number
+
+Shipment Status
+
+Origin
+
+Destination
+
+Current Location
+
+Current Facility
+
+Shipment Progress
+
+Timeline
+
+Estimated Delivery
+
+Package Weight
+
+Number of Packages
+
+Shipping Method
+
+Latest Update
+
+Receiver Name (masked)
+
+Sender Name (masked)
+
+Map
+
+History Timeline
+
+⸻
+
+Admin Dashboard
+
+The admin panel is the heart of the system.
+
+Everything must be manageable from the admin dashboard.
+
+The dashboard must have
+
+Dashboard Overview
+
+Shipment Management
+
+Tracking Updates
+
+Package Hold Management
+
+Customs Management
+
+Warehouse Management
+
+Customer Management
+
+Notifications
+
+Reports
+
+Audit Logs
+
+Website Content Management
+
+User Management
+
+Settings
+
+⸻
+
+Shipment Management
+
+The administrator must be able to
+
+Create shipment
+
+Delete shipment
+
+Edit shipment
+
+Generate tracking number
+
+Change destination
+
+Change origin
+
+Change shipping method
+
+Change estimated delivery
+
+Assign warehouse
+
+Assign carrier
+
+Assign delivery driver
+
+Upload shipment documents
+
+Upload images
+
+Upload proof of delivery
+
+Print labels
+
+Generate QR codes
+
+Archive shipment
+
+Export shipment
+
+Import shipment
+
+Duplicate shipment
+
+⸻
+
+Tracking Updates
+
+Whenever the administrator updates anything, it must immediately appear on the public tracking page.
+
+The administrator should be able to update
+
+Shipment Created
+
+Collected
+
+At Warehouse
+
+Departed Warehouse
+
+At Airport
+
+Departed Airport
+
+In Transit
+
+Arrived at Transit Hub
+
+Processing
+
+Out For Delivery
+
+Delivered
+
+Delivery Failed
+
+Returned
+
+Shipment Exception
+
+Delayed
+
+Cancelled
+
+Lost
+
+Damaged
+
+Awaiting Pickup
+
+Customs Review
+
+Customs Hold
+
+Released
+
+Package Hold
+
+Security Inspection
+
+Operational Delay
+
+Address Verification
+
+Receiver Unavailable
+
+Payment Pending
+
+Weather Delay
+
+Border Delay
+
+Port Congestion
+
+Flight Delay
+
+Road Delay
+
+Warehouse Delay
+
+Any custom status created by the administrator
+
+⸻
+
+Package Hold System
+
+The administrator must be able to place any shipment on hold.
+
+The administrator can choose the reason or create a completely custom reason.
+
+Examples include
+
+Customs Hold
+
+Security Hold
+
+Payment Pending
+
+Receiver Unavailable
+
+Address Verification
+
+Warehouse Delay
+
+Weather Delay
+
+Flight Delay
+
+Documentation Required
+
+Inspection
+
+Operational Delay
+
+Awaiting Collection
+
+Package Damage Review
+
+Incorrect Address
+
+Restricted Item Review
+
+Lost Investigation
+
+Delivery Rescheduled
+
+Customer Request
+
+Sender Request
+
+Carrier Delay
+
+Transfer Delay
+
+Any other custom reason.
+
+The administrator should simply click
+
+“Place Shipment On Hold”
+
+and enter
+
+Reason
+
+Public Message
+
+Internal Note
+
+Expected Resolution Date
+
+Current Location
+
+Facility
+
+Country
+
+City
+
+Date
+
+Time
+
+Whether to notify the customer
+
+Once saved,
+
+the public tracking page must instantly update.
+
+⸻
+
+Public Tracking
+
+Customers should see
+
+Current Status
+
+Current Location
+
+Estimated Delivery
+
+Timeline
+
+Package Progress
+
+Map
+
+Latest Update
+
+Customer Message
+
+Support Button
+
+If the shipment is on hold, display a professional warning card explaining the hold status using the administrator’s public message.
+
+⸻
+
+Customer Portal
+
+Customers should be able to
+
+Register
+
+Login
+
+Track shipments
+
+View shipment history
+
+Download invoices
+
+Receive notifications
+
+Contact support
+
+Save shipments
+
+Update notification preferences
+
+⸻
+
+Notification System
+
+Support
+
+Email
+
+SMS
+
+Future WhatsApp integration
+
+Whenever an administrator updates a shipment, notifications can be sent automatically.
+
+⸻
+
+User Roles
+
+Super Admin
+
+Operations Manager
+
+Warehouse Staff
+
+Tracking Staff
+
+Customs Officer
+
+Customer Support
+
+Finance
+
+Read Only Auditor
+
+Customer
+
+Every role must have different permissions.
+
+⸻
+
+Audit Logs
+
+Every administrator action must be recorded.
+
+Record
+
+Who made the change
+
+Old value
+
+New value
+
+Reason
+
+IP Address
+
+Time
+
+Date
+
+Device
+
+Audit logs cannot be deleted.
+
+⸻
+
+CMS
+
+The admin should also be able to edit
+
+Homepage
+
+About page
+
+Contact page
+
+Services
+
+FAQ
+
+Footer
+
+Company Information
+
+Logo
+
+Emails
+
+Phone Numbers
+
+Office Addresses
+
+Social Media Links
+
+Legal Pages
+
+News Articles
+
+Announcements
+
+Everything should be editable without touching the code.
+
+⸻
+
+Security
+
+Implement
+
+Secure Login
+
+Role Permissions
+
+Two-Factor Authentication
+
+Password Reset
+
+CSRF Protection
+
+SQL Injection Protection
+
+XSS Protection
+
+Rate Limiting
+
+Secure File Uploads
+
+Encrypted Passwords
+
+Session Management
+
+HTTPS Ready
+
+⸻
+
+Technology
+
+Use
+
+Next.js
+
+TypeScript
+
+PostgreSQL
+
+Prisma
+
+Tailwind CSS
+
+Modern Authentication
+
+Responsive Design
+
+REST API or tRPC
+
+Clean folder structure
+
+Production-ready code
+
+⸻
+
+Final Goal
+
+The finished product must feel like a genuine international logistics platform that could realistically be used by a global shipping company.
+
+The interface should be polished, fast, secure, responsive, and enterprise-grade.
+
+The tracking experience should be smooth and professional.
+
+The admin dashboard should allow authorized staff to manage the complete shipment lifecycle, with every legitimate operational update reflected immediately on the customer’s tracking page while maintaining a complete audit history.
+
+Do not build a prototype. Build this as a scalable production-ready logistics management system with clean architecture, maintainable code, and a premium user experience.
