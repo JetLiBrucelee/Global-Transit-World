@@ -3,20 +3,46 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Sinovera Transit Global API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: shipments
+    description: Shipment management
+  - name: tracking
+    description: Tracking events and public tracking
+  - name: holds
+    description: Package hold management
+  - name: customers
+    description: Customer management
+  - name: users
+    description: Staff user management
+  - name: warehouses
+    description: Warehouse management
+  - name: carriers
+    description: Carrier management
+  - name: cms
+    description: CMS content management
+  - name: news
+    description: News articles
+  - name: quotes
+    description: Quote requests
+  - name: notifications
+    description: Notifications
+  - name: audit
+    description: Audit logs
+  - name: dashboard
+    description: Dashboard statistics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +50,2642 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Dashboard ──────────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getDashboardRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: number
+            default: 20
+      responses:
+        "200":
+          description: Recent activity items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  # ── Shipments ──────────────────────────────────────────────────────────────
+  /shipments:
+    get:
+      operationId: listShipments
+      tags: [shipments]
+      summary: List shipments
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: number, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: number, default: 20 }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: isArchived
+          in: query
+          schema: { type: boolean }
+        - name: isHeld
+          in: query
+          schema: { type: boolean }
+        - name: customerId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Paginated list of shipments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipmentListResponse"
+
+    post:
+      operationId: createShipment
+      tags: [shipments]
+      summary: Create a new shipment
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipmentInput"
+      responses:
+        "201":
+          description: Created shipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shipment"
+
+  /shipments/{id}:
+    get:
+      operationId: getShipment
+      tags: [shipments]
+      summary: Get shipment by ID
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Shipment detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipmentDetail"
+        "404":
+          description: Not found
+
+    patch:
+      operationId: updateShipment
+      tags: [shipments]
+      summary: Update shipment
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipmentUpdate"
+      responses:
+        "200":
+          description: Updated shipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shipment"
+        "404":
+          description: Not found
+
+    delete:
+      operationId: deleteShipment
+      tags: [shipments]
+      summary: Delete shipment
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /shipments/{id}/archive:
+    post:
+      operationId: archiveShipment
+      tags: [shipments]
+      summary: Archive/unarchive a shipment
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveShipmentInput"
+      responses:
+        "200":
+          description: Updated shipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shipment"
+
+  /shipments/{id}/duplicate:
+    post:
+      operationId: duplicateShipment
+      tags: [shipments]
+      summary: Duplicate a shipment
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "201":
+          description: Duplicated shipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shipment"
+
+  /shipments/generate-tracking-number:
+    post:
+      operationId: generateTrackingNumber
+      tags: [shipments]
+      summary: Generate a new tracking number
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Generated tracking number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingNumberResponse"
+
+  /shipments/import:
+    post:
+      operationId: importShipments
+      tags: [shipments]
+      summary: Import shipments from JSON array
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipmentImportInput"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
+
+  # ── Tracking (public + admin) ───────────────────────────────────────────────
+  /track/{trackingNumber}:
+    get:
+      operationId: trackShipment
+      tags: [tracking]
+      summary: Public shipment tracking lookup
+      parameters:
+        - name: trackingNumber
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Public tracking info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicTrackingResponse"
+        "404":
+          description: Shipment not found
+
+  /shipments/{id}/tracking-events:
+    get:
+      operationId: listTrackingEvents
+      tags: [tracking]
+      summary: List tracking events for a shipment
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tracking events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrackingEvent"
+
+    post:
+      operationId: addTrackingEvent
+      tags: [tracking]
+      summary: Add a tracking event
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackingEventInput"
+      responses:
+        "201":
+          description: Created tracking event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingEvent"
+
+  /shipments/{id}/tracking-events/{eventId}:
+    patch:
+      operationId: updateTrackingEvent
+      tags: [tracking]
+      summary: Update a tracking event
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: eventId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackingEventUpdate"
+      responses:
+        "200":
+          description: Updated tracking event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingEvent"
+
+    delete:
+      operationId: deleteTrackingEvent
+      tags: [tracking]
+      summary: Delete a tracking event
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: eventId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Holds ──────────────────────────────────────────────────────────────────
+  /shipments/{id}/holds:
+    get:
+      operationId: listHolds
+      tags: [holds]
+      summary: List holds for a shipment
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Hold records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Hold"
+
+    post:
+      operationId: createHold
+      tags: [holds]
+      summary: Place a shipment on hold
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HoldInput"
+      responses:
+        "201":
+          description: Hold created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hold"
+
+  /shipments/{id}/holds/{holdId}:
+    patch:
+      operationId: updateHold
+      tags: [holds]
+      summary: Update a hold
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: holdId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HoldUpdate"
+      responses:
+        "200":
+          description: Updated hold
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hold"
+
+  /shipments/{id}/holds/{holdId}/release:
+    post:
+      operationId: releaseHold
+      tags: [holds]
+      summary: Release a hold
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: holdId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Hold released
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hold"
+
+  # ── Customers ──────────────────────────────────────────────────────────────
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List customers
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: number, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: number, default: 20 }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Paginated customers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerListResponse"
+
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create a customer
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: Created customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /customers/me:
+    get:
+      operationId: getMyCustomerProfile
+      tags: [customers]
+      summary: Get current customer profile
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "404":
+          description: Not found
+
+    patch:
+      operationId: updateMyCustomerProfile
+      tags: [customers]
+      summary: Update current customer profile
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /customers/{id}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: Get customer by ID
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "404":
+          description: Not found
+
+    patch:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: Update customer
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Updated customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+    delete:
+      operationId: deleteCustomer
+      tags: [customers]
+      summary: Delete customer
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  /customers/me/saved-shipments:
+    get:
+      operationId: getMySavedShipments
+      tags: [customers]
+      summary: Get current customer saved shipments
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Saved shipments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedShipment"
+
+    post:
+      operationId: saveShipment
+      tags: [customers]
+      summary: Save a shipment to customer account
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveShipmentInput"
+      responses:
+        "201":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedShipment"
+
+  /customers/me/saved-shipments/{savedId}:
+    delete:
+      operationId: unsaveShipment
+      tags: [customers]
+      summary: Remove a saved shipment
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: savedId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Removed
+
+  # ── Users (staff) ──────────────────────────────────────────────────────────
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List staff users
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: number, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: number, default: 20 }
+        - name: role
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create staff user
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by ID
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete user
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Warehouses ─────────────────────────────────────────────────────────────
+  /warehouses:
+    get:
+      operationId: listWarehouses
+      tags: [warehouses]
+      summary: List warehouses
+      responses:
+        "200":
+          description: Warehouses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Warehouse"
+
+    post:
+      operationId: createWarehouse
+      tags: [warehouses]
+      summary: Create warehouse
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WarehouseInput"
+      responses:
+        "201":
+          description: Created warehouse
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warehouse"
+
+  /warehouses/{id}:
+    patch:
+      operationId: updateWarehouse
+      tags: [warehouses]
+      summary: Update warehouse
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WarehouseUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warehouse"
+
+    delete:
+      operationId: deleteWarehouse
+      tags: [warehouses]
+      summary: Delete warehouse
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Carriers ───────────────────────────────────────────────────────────────
+  /carriers:
+    get:
+      operationId: listCarriers
+      tags: [carriers]
+      summary: List carriers
+      responses:
+        "200":
+          description: Carriers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Carrier"
+
+    post:
+      operationId: createCarrier
+      tags: [carriers]
+      summary: Create carrier
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CarrierInput"
+      responses:
+        "201":
+          description: Created carrier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Carrier"
+
+  /carriers/{id}:
+    patch:
+      operationId: updateCarrier
+      tags: [carriers]
+      summary: Update carrier
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CarrierUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Carrier"
+
+    delete:
+      operationId: deleteCarrier
+      tags: [carriers]
+      summary: Delete carrier
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  # ── CMS ────────────────────────────────────────────────────────────────────
+  /cms:
+    get:
+      operationId: listCmsContent
+      tags: [cms]
+      summary: List all CMS content (public)
+      responses:
+        "200":
+          description: CMS content items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CmsContent"
+
+  /cms/{section}:
+    get:
+      operationId: getCmsSection
+      tags: [cms]
+      summary: Get CMS content by section
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Section content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CmsContent"
+
+    put:
+      operationId: upsertCmsSection
+      tags: [cms]
+      summary: Upsert CMS section content
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CmsSectionInput"
+      responses:
+        "200":
+          description: Updated section
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CmsContent"
+
+  /cms/{section}/{key}:
+    put:
+      operationId: upsertCmsItem
+      tags: [cms]
+      summary: Upsert a single CMS item
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema: { type: string }
+        - name: key
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CmsItemInput"
+      responses:
+        "200":
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CmsContent"
+
+  # ── News ───────────────────────────────────────────────────────────────────
+  /news:
+    get:
+      operationId: listNews
+      tags: [news]
+      summary: List published news articles
+      parameters:
+        - name: page
+          in: query
+          schema: { type: number, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: number, default: 10 }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: all
+          in: query
+          description: If true, include unpublished (admin only)
+          schema: { type: boolean }
+      responses:
+        "200":
+          description: News articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsListResponse"
+
+    post:
+      operationId: createNewsArticle
+      tags: [news]
+      summary: Create news article
+      security: [{ clerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsArticleInput"
+      responses:
+        "201":
+          description: Created article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsArticle"
+
+  /news/{slug}:
+    get:
+      operationId: getNewsArticle
+      tags: [news]
+      summary: Get news article by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsArticle"
+        "404":
+          description: Not found
+
+  /news/{slug}/edit:
+    patch:
+      operationId: updateNewsArticle
+      tags: [news]
+      summary: Update news article
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsArticleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsArticle"
+
+    delete:
+      operationId: deleteNewsArticle
+      tags: [news]
+      summary: Delete news article
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Quote Requests ─────────────────────────────────────────────────────────
+  /quotes:
+    get:
+      operationId: listQuotes
+      tags: [quotes]
+      summary: List quote requests
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: number, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: number, default: 20 }
+        - name: status
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Quote requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteListResponse"
+
+    post:
+      operationId: createQuote
+      tags: [quotes]
+      summary: Submit a quote request (public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteInput"
+      responses:
+        "201":
+          description: Quote request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteRequest"
+
+  /quotes/{id}:
+    get:
+      operationId: getQuote
+      tags: [quotes]
+      summary: Get quote request
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Quote request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteRequest"
+
+    patch:
+      operationId: updateQuote
+      tags: [quotes]
+      summary: Update quote request (admin)
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteRequest"
+
+  # ── Notifications ──────────────────────────────────────────────────────────
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications for current user
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema: { type: boolean }
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      security: [{ clerkAuth: [] }]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ── Audit Logs ─────────────────────────────────────────────────────────────
+  /audit-logs:
+    get:
+      operationId: listAuditLogs
+      tags: [audit]
+      summary: List audit logs
+      security: [{ clerkAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: number, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: number, default: 50 }
+        - name: entityType
+          in: query
+          schema: { type: string }
+        - name: entityId
+          in: query
+          schema: { type: string }
+        - name: actorId
+          in: query
+          schema: { type: string }
+        - name: action
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string }
+        - name: to
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditLogListResponse"
+
 components:
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+
   schemas:
     HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+
+    # ── Dashboard ─────────────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      required:
+        - totalShipments
+        - inTransit
+        - delivered
+        - onHold
+        - delayed
+        - cancelled
+        - shipmentsByStatus
+        - totalCustomers
+        - totalQuoteRequests
+        - recentShipmentsCount
+      properties:
+        totalShipments:
+          type: number
+        inTransit:
+          type: number
+        delivered:
+          type: number
+        onHold:
+          type: number
+        delayed:
+          type: number
+        cancelled:
+          type: number
+        totalCustomers:
+          type: number
+        totalQuoteRequests:
+          type: number
+        recentShipmentsCount:
+          type: number
+        shipmentsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatusCount"
+
+    StatusCount:
+      type: object
+      required: [status, count]
+      properties:
+        status:
+          type: string
+        count:
+          type: number
+
+    ActivityItem:
+      type: object
+      required: [id, action, entityType, description, createdAt]
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: ["string", "null"]
+        description:
+          type: string
+        actorEmail:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Shipment ──────────────────────────────────────────────────────────────
+    Shipment:
+      type: object
+      required:
+        - id
+        - trackingNumber
+        - status
+        - senderName
+        - receiverName
+        - originCity
+        - originCountry
+        - destinationCity
+        - destinationCountry
+        - shippingMethod
+        - numberOfPackages
+        - isArchived
+        - isHeld
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        trackingNumber:
+          type: string
+        status:
+          type: string
+        customStatus:
+          type: ["string", "null"]
+        senderName:
+          type: string
+        senderPhone:
+          type: ["string", "null"]
+        senderEmail:
+          type: ["string", "null"]
+        senderAddress:
+          type: ["string", "null"]
+        receiverName:
+          type: string
+        receiverPhone:
+          type: ["string", "null"]
+        receiverEmail:
+          type: ["string", "null"]
+        receiverAddress:
+          type: ["string", "null"]
+        customerId:
+          type: ["string", "null"]
+        originCity:
+          type: string
+        originCountry:
+          type: string
+        destinationCity:
+          type: string
+        destinationCountry:
+          type: string
+        currentLocation:
+          type: ["string", "null"]
+        currentFacility:
+          type: ["string", "null"]
+        currentCity:
+          type: ["string", "null"]
+        currentCountry:
+          type: ["string", "null"]
+        shippingMethod:
+          type: string
+        serviceType:
+          type: ["string", "null"]
+        estimatedDelivery:
+          type: ["string", "null"]
+          format: date-time
+        actualDelivery:
+          type: ["string", "null"]
+          format: date-time
+        weightKg:
+          type: ["string", "null"]
+        numberOfPackages:
+          type: number
+        dimensions:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        declaredValue:
+          type: ["string", "null"]
+        currency:
+          type: string
+        warehouseId:
+          type: ["string", "null"]
+        carrierId:
+          type: ["string", "null"]
+        driverName:
+          type: ["string", "null"]
+        driverPhone:
+          type: ["string", "null"]
+        documents:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+        proofOfDelivery:
+          type: ["string", "null"]
+        isArchived:
+          type: boolean
+        isHeld:
+          type: boolean
+        requiresCustoms:
+          type: boolean
+        internalNotes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ShipmentDetail:
+      allOf:
+        - $ref: "#/components/schemas/Shipment"
+        - type: object
+          properties:
+            trackingEvents:
+              type: array
+              items:
+                $ref: "#/components/schemas/TrackingEvent"
+            activeHold:
+              $ref: "#/components/schemas/Hold"
+            warehouse:
+              $ref: "#/components/schemas/Warehouse"
+            carrier:
+              $ref: "#/components/schemas/Carrier"
+
+    ShipmentListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Shipment"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    ShipmentInput:
+      type: object
+      required:
+        - senderName
+        - receiverName
+        - originCity
+        - originCountry
+        - destinationCity
+        - destinationCountry
+        - shippingMethod
+      properties:
+        senderName:
+          type: string
+        senderPhone:
+          type: string
+        senderEmail:
+          type: string
+        senderAddress:
+          type: string
+        receiverName:
+          type: string
+        receiverPhone:
+          type: string
+        receiverEmail:
+          type: string
+        receiverAddress:
+          type: string
+        customerId:
+          type: string
+        originCity:
+          type: string
+        originCountry:
+          type: string
+        destinationCity:
+          type: string
+        destinationCountry:
+          type: string
+        shippingMethod:
+          type: string
+        serviceType:
+          type: string
+        estimatedDelivery:
+          type: string
+          format: date-time
+        weightKg:
+          type: string
+        numberOfPackages:
+          type: number
+        dimensions:
+          type: string
+        description:
+          type: string
+        declaredValue:
+          type: string
+        currency:
+          type: string
+        warehouseId:
+          type: string
+        carrierId:
+          type: string
+        driverName:
+          type: string
+        driverPhone:
+          type: string
+        requiresCustoms:
+          type: boolean
+        internalNotes:
+          type: string
+        status:
+          type: string
+
+    ShipmentUpdate:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
+        customStatus:
+          type: string
+        senderName:
+          type: string
+        senderPhone:
+          type: string
+        senderEmail:
+          type: string
+        senderAddress:
+          type: string
+        receiverName:
+          type: string
+        receiverPhone:
+          type: string
+        receiverEmail:
+          type: string
+        receiverAddress:
+          type: string
+        customerId:
+          type: string
+        originCity:
+          type: string
+        originCountry:
+          type: string
+        destinationCity:
+          type: string
+        destinationCountry:
+          type: string
+        currentLocation:
+          type: string
+        currentFacility:
+          type: string
+        currentCity:
+          type: string
+        currentCountry:
+          type: string
+        shippingMethod:
+          type: string
+        serviceType:
+          type: string
+        estimatedDelivery:
+          type: string
+          format: date-time
+        actualDelivery:
+          type: string
+          format: date-time
+        weightKg:
+          type: string
+        numberOfPackages:
+          type: number
+        dimensions:
+          type: string
+        description:
+          type: string
+        declaredValue:
+          type: string
+        currency:
+          type: string
+        warehouseId:
+          type: string
+        carrierId:
+          type: string
+        driverName:
+          type: string
+        driverPhone:
+          type: string
+        documents:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+        proofOfDelivery:
+          type: string
+        requiresCustoms:
+          type: boolean
+        internalNotes:
+          type: string
 
+    ArchiveShipmentInput:
+      type: object
+      required: [isArchived]
+      properties:
+        isArchived:
+          type: boolean
+
+    TrackingNumberResponse:
+      type: object
+      required: [trackingNumber]
+      properties:
+        trackingNumber:
+          type: string
+
+    ShipmentImportInput:
+      type: object
+      required: [shipments]
+      properties:
+        shipments:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShipmentInput"
+
+    ImportResult:
+      type: object
+      required: [imported, failed]
+      properties:
+        imported:
+          type: number
+        failed:
+          type: number
+        errors:
+          type: array
+          items:
+            type: string
+
+    # ── Public Tracking ───────────────────────────────────────────────────────
+    PublicTrackingResponse:
+      type: object
+      required:
+        - trackingNumber
+        - status
+        - originCity
+        - originCountry
+        - destinationCity
+        - destinationCountry
+        - shippingMethod
+        - numberOfPackages
+        - isHeld
+        - trackingEvents
+        - createdAt
+      properties:
+        trackingNumber:
+          type: string
+        status:
+          type: string
+        customStatus:
+          type: ["string", "null"]
+        originCity:
+          type: string
+        originCountry:
+          type: string
+        destinationCity:
+          type: string
+        destinationCountry:
+          type: string
+        currentLocation:
+          type: ["string", "null"]
+        currentFacility:
+          type: ["string", "null"]
+        currentCity:
+          type: ["string", "null"]
+        currentCountry:
+          type: ["string", "null"]
+        shippingMethod:
+          type: string
+        estimatedDelivery:
+          type: ["string", "null"]
+          format: date-time
+        actualDelivery:
+          type: ["string", "null"]
+          format: date-time
+        weightKg:
+          type: ["string", "null"]
+        numberOfPackages:
+          type: number
+        senderNameMasked:
+          type: ["string", "null"]
+        receiverNameMasked:
+          type: ["string", "null"]
+        isHeld:
+          type: boolean
+        activeHold:
+          $ref: "#/components/schemas/PublicHold"
+        trackingEvents:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackingEvent"
+        createdAt:
+          type: string
+          format: date-time
+
+    PublicHold:
+      type: object
+      required: [reason, publicMessage, isActive]
+      properties:
+        reason:
+          type: string
+        publicMessage:
+          type: string
+        expectedResolutionDate:
+          type: ["string", "null"]
+          format: date-time
+        location:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+
+    # ── Tracking Event ────────────────────────────────────────────────────────
+    TrackingEvent:
+      type: object
+      required:
+        - id
+        - shipmentId
+        - status
+        - description
+        - eventTime
+        - isPublic
+        - sortOrder
+        - createdAt
+      properties:
+        id:
+          type: string
+        shipmentId:
+          type: string
+        status:
+          type: string
+        customStatus:
+          type: ["string", "null"]
+        description:
+          type: string
+        location:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        facility:
+          type: ["string", "null"]
+        eventTime:
+          type: string
+          format: date-time
+        isPublic:
+          type: boolean
+        sortOrder:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    TrackingEventInput:
+      type: object
+      required: [status, description]
+      properties:
+        status:
+          type: string
+        customStatus:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        facility:
+          type: string
+        eventTime:
+          type: string
+          format: date-time
+        isPublic:
+          type: boolean
+        sortOrder:
+          type: number
+
+    TrackingEventUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        customStatus:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        facility:
+          type: string
+        eventTime:
+          type: string
+          format: date-time
+        isPublic:
+          type: boolean
+        sortOrder:
+          type: number
+
+    # ── Hold ──────────────────────────────────────────────────────────────────
+    Hold:
+      type: object
+      required:
+        - id
+        - shipmentId
+        - reason
+        - publicMessage
+        - notifyCustomer
+        - isActive
+        - createdAt
+      properties:
+        id:
+          type: string
+        shipmentId:
+          type: string
+        reason:
+          type: string
+        publicMessage:
+          type: string
+        internalNote:
+          type: ["string", "null"]
+        expectedResolutionDate:
+          type: ["string", "null"]
+          format: date-time
+        location:
+          type: ["string", "null"]
+        facility:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        notifyCustomer:
+          type: boolean
+        isActive:
+          type: boolean
+        resolvedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    HoldInput:
+      type: object
+      required: [reason, publicMessage]
+      properties:
+        reason:
+          type: string
+        publicMessage:
+          type: string
+        internalNote:
+          type: string
+        expectedResolutionDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+        facility:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        notifyCustomer:
+          type: boolean
+
+    HoldUpdate:
+      type: object
+      properties:
+        reason:
+          type: string
+        publicMessage:
+          type: string
+        internalNote:
+          type: string
+        expectedResolutionDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+        facility:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        notifyCustomer:
+          type: boolean
+
+    # ── Customer ──────────────────────────────────────────────────────────────
+    Customer:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - notifyEmail
+        - notifySms
+        - isActive
+        - createdAt
+      properties:
+        id:
+          type: string
+        clerkId:
+          type: ["string", "null"]
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        notifyEmail:
+          type: boolean
+        notifySms:
+          type: boolean
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CustomerListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Customer"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    CustomerInput:
+      type: object
+      required: [email, firstName, lastName]
+      properties:
+        clerkId:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        notifyEmail:
+          type: boolean
+        notifySms:
+          type: boolean
+
+    CustomerUpdate:
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        notifyEmail:
+          type: boolean
+        notifySms:
+          type: boolean
+        isActive:
+          type: boolean
+
+    SavedShipment:
+      type: object
+      required: [id, customerId, shipmentId, createdAt]
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        shipmentId:
+          type: string
+        nickname:
+          type: ["string", "null"]
+        shipment:
+          $ref: "#/components/schemas/Shipment"
+        createdAt:
+          type: string
+          format: date-time
+
+    SaveShipmentInput:
+      type: object
+      required: [shipmentId]
+      properties:
+        shipmentId:
+          type: string
+        nickname:
+          type: string
+
+    # ── User ──────────────────────────────────────────────────────────────────
+    User:
+      type: object
+      required:
+        - id
+        - clerkId
+        - email
+        - firstName
+        - lastName
+        - role
+        - isActive
+        - createdAt
+      properties:
+        id:
+          type: string
+        clerkId:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: ["string", "null"]
+        role:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    UserListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    UserInput:
+      type: object
+      required: [clerkId, email, firstName, lastName, role]
+      properties:
+        clerkId:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        isActive:
+          type: boolean
+
+    # ── Warehouse ─────────────────────────────────────────────────────────────
+    Warehouse:
+      type: object
+      required: [id, name, code, address, city, country, isActive, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        contactEmail:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    WarehouseInput:
+      type: object
+      required: [name, code, address, city, country]
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+
+    WarehouseUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        isActive:
+          type: boolean
+
+    # ── Carrier ───────────────────────────────────────────────────────────────
+    Carrier:
+      type: object
+      required: [id, name, code, isActive, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        contactEmail:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+        trackingUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CarrierInput:
+      type: object
+      required: [name, code]
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        trackingUrl:
+          type: string
+
+    CarrierUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        trackingUrl:
+          type: string
+        isActive:
+          type: boolean
+
+    # ── CMS ───────────────────────────────────────────────────────────────────
+    CmsContent:
+      type: object
+      required: [id, section, key, isPublished, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        section:
+          type: string
+        key:
+          type: string
+        value:
+          type: ["string", "null"]
+        jsonValue:
+          nullable: true
+        label:
+          type: ["string", "null"]
+        isPublished:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CmsSectionInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CmsItemInput"
+
+    CmsItemInput:
+      type: object
+      required: [key]
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+        jsonValue: {}
+        label:
+          type: string
+        isPublished:
+          type: boolean
+
+    # ── News ──────────────────────────────────────────────────────────────────
+    NewsArticle:
+      type: object
+      required: [id, title, slug, content, category, tags, isPublished, createdAt]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: ["string", "null"]
+        content:
+          type: string
+        coverImage:
+          type: ["string", "null"]
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isPublished:
+          type: boolean
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    NewsListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsArticle"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    NewsArticleInput:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        coverImage:
+          type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isPublished:
+          type: boolean
+
+    NewsArticleUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        coverImage:
+          type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isPublished:
+          type: boolean
+
+    # ── Quote ─────────────────────────────────────────────────────────────────
+    QuoteRequest:
+      type: object
+      required:
+        - id
+        - referenceNumber
+        - contactName
+        - contactEmail
+        - originCity
+        - originCountry
+        - destinationCity
+        - destinationCountry
+        - serviceType
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+        referenceNumber:
+          type: string
+        contactName:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: ["string", "null"]
+        companyName:
+          type: ["string", "null"]
+        originCity:
+          type: string
+        originCountry:
+          type: string
+        destinationCity:
+          type: string
+        destinationCountry:
+          type: string
+        serviceType:
+          type: string
+        weightKg:
+          type: ["string", "null"]
+        dimensions:
+          type: ["string", "null"]
+        cargoDescription:
+          type: ["string", "null"]
+        declaredValue:
+          type: ["string", "null"]
+        currency:
+          type: string
+        specialRequirements:
+          type: ["string", "null"]
+        status:
+          type: string
+        quotedPrice:
+          type: ["string", "null"]
+        adminNotes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    QuoteListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuoteRequest"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    QuoteInput:
+      type: object
+      required:
+        - contactName
+        - contactEmail
+        - originCity
+        - originCountry
+        - destinationCity
+        - destinationCountry
+        - serviceType
+      properties:
+        contactName:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        companyName:
+          type: string
+        originCity:
+          type: string
+        originCountry:
+          type: string
+        destinationCity:
+          type: string
+        destinationCountry:
+          type: string
+        serviceType:
+          type: string
+        weightKg:
+          type: string
+        dimensions:
+          type: string
+        cargoDescription:
+          type: string
+        declaredValue:
+          type: string
+        currency:
+          type: string
+        specialRequirements:
+          type: string
+
+    QuoteUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        quotedPrice:
+          type: string
+        adminNotes:
+          type: string
+
+    # ── Notification ──────────────────────────────────────────────────────────
+    Notification:
+      type: object
+      required: [id, title, message, type, channel, isRead, createdAt]
+      properties:
+        id:
+          type: string
+        customerId:
+          type: ["string", "null"]
+        shipmentId:
+          type: ["string", "null"]
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+        channel:
+          type: string
+        isRead:
+          type: boolean
+        readAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Audit Log ─────────────────────────────────────────────────────────────
+    AuditLog:
+      type: object
+      required: [id, action, entityType, createdAt]
+      properties:
+        id:
+          type: string
+        actorId:
+          type: ["string", "null"]
+        actorClerkId:
+          type: ["string", "null"]
+        actorEmail:
+          type: ["string", "null"]
+        actorRole:
+          type: ["string", "null"]
+        action:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: ["string", "null"]
+        oldValue: {}
+        newValue: {}
+        reason:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        ipAddress:
+          type: ["string", "null"]
+        userAgent:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    AuditLogListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditLog"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
