@@ -1,8 +1,9 @@
 import { Router, type IRouter } from "express";
-import { db, shipmentsTable, holdsTable } from "@workspace/db";
+import { db, shipmentsTable, holdsTable, customersTable, notificationsTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 import { requireAuth, requireUserRecord, requireStaff } from "../lib/auth";
 import { writeAuditLog } from "../lib/audit";
+import { sendHoldNotification, sendHoldReleasedNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -50,6 +51,53 @@ router.post("/shipments/:id/holds", requireAuth, requireUserRecord, requireStaff
   });
 
   res.status(201).json(hold);
+
+  // Email + in-app notifications (fire-and-forget)
+  if (hold.notifyCustomer) {
+    (async () => {
+      try {
+        const [shipment] = await db.select().from(shipmentsTable).where(eq(shipmentsTable.id, id)).limit(1);
+        if (!shipment) return;
+
+        const recipients: Array<{ email: string; name: string }> = [];
+
+        if (shipment.receiverEmail) {
+          recipients.push({ email: shipment.receiverEmail, name: shipment.receiverName });
+        }
+
+        if (shipment.customerId) {
+          const [customer] = await db.select().from(customersTable)
+            .where(eq(customersTable.id, shipment.customerId)).limit(1);
+          if (customer?.email && customer.notifyEmail) {
+            if (customer.email !== shipment.receiverEmail) {
+              recipients.push({ email: customer.email, name: `${customer.firstName} ${customer.lastName}`.trim() || shipment.receiverName });
+            }
+            await db.insert(notificationsTable).values({
+              customerId: customer.id,
+              shipmentId: shipment.id,
+              title: `Shipment on hold: ${hold.reason.replace(/_/g, " ")}`,
+              message: hold.publicMessage,
+              type: "hold",
+              channel: "in_app",
+            }).catch(() => {});
+          }
+        }
+
+        await Promise.all(
+          recipients.map(r => sendHoldNotification({
+            email: r.email,
+            name: r.name,
+            trackingNumber: shipment.trackingNumber,
+            reason: hold.reason,
+            publicMessage: hold.publicMessage,
+            expectedResolutionDate: hold.expectedResolutionDate,
+          }))
+        );
+      } catch (e: any) {
+        console.error("[email] hold notification failed:", e.message);
+      }
+    })();
+  }
 });
 
 router.patch("/shipments/:id/holds/:holdId", requireAuth, requireUserRecord, requireStaff, async (req, res): Promise<void> => {
@@ -90,6 +138,48 @@ router.post("/shipments/:id/holds/:holdId/release", requireAuth, requireUserReco
 
   await writeAuditLog(req, { action: "release_hold", entityType: "hold", entityId: holdId, description: "Hold released" });
   res.json(hold);
+
+  // Email + in-app notifications (fire-and-forget)
+  (async () => {
+    try {
+      const [shipment] = await db.select().from(shipmentsTable).where(eq(shipmentsTable.id, shipmentId)).limit(1);
+      if (!shipment) return;
+
+      const recipients: Array<{ email: string; name: string }> = [];
+
+      if (shipment.receiverEmail) {
+        recipients.push({ email: shipment.receiverEmail, name: shipment.receiverName });
+      }
+
+      if (shipment.customerId) {
+        const [customer] = await db.select().from(customersTable)
+          .where(eq(customersTable.id, shipment.customerId)).limit(1);
+        if (customer?.email && customer.notifyEmail) {
+          if (customer.email !== shipment.receiverEmail) {
+            recipients.push({ email: customer.email, name: `${customer.firstName} ${customer.lastName}`.trim() || shipment.receiverName });
+          }
+          await db.insert(notificationsTable).values({
+            customerId: customer.id,
+            shipmentId: shipment.id,
+            title: `Hold released — shipment is moving`,
+            message: `The hold on your shipment ${shipment.trackingNumber} has been resolved. Your shipment is back in transit.`,
+            type: "hold_released",
+            channel: "in_app",
+          }).catch(() => {});
+        }
+      }
+
+      await Promise.all(
+        recipients.map(r => sendHoldReleasedNotification({
+          email: r.email,
+          name: r.name,
+          trackingNumber: shipment.trackingNumber,
+        }))
+      );
+    } catch (e: any) {
+      console.error("[email] hold release notification failed:", e.message);
+    }
+  })();
 });
 
 export default router;

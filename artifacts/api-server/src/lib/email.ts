@@ -238,7 +238,70 @@ export async function sendTrackingUpdate(data: {
   });
 }
 
-// ─── 6. Generic notification email ───────────────────────────────────────────
+// ─── 6. Shipment hold activated ──────────────────────────────────────────────
+export async function sendHoldNotification(data: {
+  email: string;
+  name: string;
+  trackingNumber: string;
+  reason: string;
+  publicMessage: string;
+  expectedResolutionDate?: Date | null;
+}) {
+  const rows: Array<[string, string]> = [
+    ["Tracking #", data.trackingNumber],
+    ["Hold Reason", data.reason.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())],
+  ];
+  if (data.expectedResolutionDate) {
+    rows.push(["Expected Resolution", new Date(data.expectedResolutionDate).toDateString()]);
+  }
+
+  const body = `
+    ${heading(`Action required: your shipment is on hold`)}
+    ${para(`Hi ${data.name}, your shipment <strong style="font-family:monospace;color:${BRAND_COLOR};">${data.trackingNumber}</strong> has been placed on hold and requires your attention.`)}
+    ${divider()}
+    <div style="background:#fff7ed;border-left:4px solid #f59e0b;border-radius:4px;padding:14px 20px;margin:16px 0;">
+      <p style="margin:0;font-size:15px;font-weight:700;color:#92400e;">Shipment On Hold</p>
+      <p style="margin:6px 0 0;font-size:14px;color:#78350f;">${data.publicMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+    </div>
+    ${infoTable(rows)}
+    ${para(`If you have questions or need to take action, please contact our support team at <a href="mailto:${SUPPORT}" style="color:${ACCENT};">${SUPPORT}</a> quoting your tracking number.`)}
+    ${trackingButton(data.trackingNumber)}
+  `;
+  return resend.emails.send({
+    from: FROM,
+    to: data.email,
+    subject: `Action required: Shipment ${data.trackingNumber} is on hold`,
+    html: baseTemplate("Shipment On Hold", body),
+  });
+}
+
+// ─── 7. Shipment hold released ────────────────────────────────────────────────
+export async function sendHoldReleasedNotification(data: {
+  email: string;
+  name: string;
+  trackingNumber: string;
+}) {
+  const body = `
+    ${heading(`Good news — your shipment is moving again!`)}
+    ${para(`Hi ${data.name}, the hold on your shipment <strong style="font-family:monospace;color:${BRAND_COLOR};">${data.trackingNumber}</strong> has been resolved and it is now back in transit.`)}
+    ${divider()}
+    <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:4px;padding:14px 20px;margin:16px 0;">
+      <p style="margin:0;font-size:15px;font-weight:700;color:#14532d;">Hold Released</p>
+      <p style="margin:6px 0 0;font-size:14px;color:#166534;">Your shipment has been cleared and is on its way to you.</p>
+    </div>
+    ${infoTable([["Tracking #", data.trackingNumber]])}
+    ${trackingButton(data.trackingNumber)}
+    ${para(`Thank you for your patience. If you have any further questions, contact us at <a href="mailto:${SUPPORT}" style="color:${ACCENT};">${SUPPORT}</a>.`)}
+  `;
+  return resend.emails.send({
+    from: FROM,
+    to: data.email,
+    subject: `Your shipment ${data.trackingNumber} is back on track`,
+    html: baseTemplate("Hold Released", body),
+  });
+}
+
+// ─── 8. Generic notification email ───────────────────────────────────────────
 export async function sendNotificationEmail(data: {
   email: string;
   name: string;
