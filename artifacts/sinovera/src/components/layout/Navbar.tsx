@@ -31,9 +31,11 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group" data-testid="link-home">
-          <div className="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xl rounded-sm">
-            {shortName}
-          </div>
+          <img
+            src="/logo-3d.png"
+            alt="STG"
+            className="h-12 w-auto object-contain drop-shadow-sm"
+          />
           <div className="hidden sm:flex flex-col">
             <span className="font-bold text-lg leading-tight tracking-tight text-primary group-hover:text-secondary transition-colors">
               {name}

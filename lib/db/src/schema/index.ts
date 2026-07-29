@@ -9,3 +9,4 @@ export * from "./cms_content";
 export * from "./audit_logs";
 export * from "./notifications";
 export * from "./quote_requests";
+export * from "./chat";

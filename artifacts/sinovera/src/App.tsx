@@ -29,6 +29,7 @@ import ShipmentHistory from '@/pages/portal/ShipmentHistory';
 import Notifications from '@/pages/portal/Notifications';
 import PortalSettings from '@/pages/portal/PortalSettings';
 import PortalSupport from '@/pages/portal/PortalSupport';
+import ChatWidget from '@/components/ChatWidget';
 
 // ── Clerk config ──────────────────────────────────────────────────────────────
 // REQUIRED — copy verbatim. Resolves the key from window.location.hostname so
@@ -164,6 +165,7 @@ function ClerkQueryClientCacheInvalidator() {
 function PublicRoutes() {
   return (
     <RootLayout>
+      <ChatWidget />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/track" component={Track} />

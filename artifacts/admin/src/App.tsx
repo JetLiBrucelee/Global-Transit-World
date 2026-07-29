@@ -21,6 +21,7 @@ import AuditLogsPage from '@/pages/AuditLogsPage';
 import NotificationsPage from '@/pages/NotificationsPage';
 import ReportsPage from '@/pages/ReportsPage';
 import SettingsPage from '@/pages/SettingsPage';
+import ChatPage from '@/pages/ChatPage';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient({
@@ -49,7 +50,7 @@ const clerkAppearance = {
   options: {
     logoPlacement: 'inside' as const,
     logoLinkUrl: basePath || '/',
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
+    logoImageUrl: `${window.location.origin}${basePath}/logo-3d.png`,
   },
   variables: {
     colorPrimary: '#1a2744',
@@ -127,7 +128,7 @@ function SignInPage() {
 function HomeLanding() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1a2744] to-[#1e3a6e] px-4">
-      <img src={`${basePath}/logo.svg`} alt="STG" className="h-14 mb-6" />
+      <img src={`${basePath}/logo-3d.png`} alt="STG" className="h-24 mb-6 drop-shadow-2xl" />
       <h1 className="text-3xl font-bold text-white mb-2">Sinovera Transit Global</h1>
       <p className="text-[#94a3b8] mb-8">Operations Management Portal</p>
       <a
@@ -169,6 +170,8 @@ function ClerkProviderWithRoutes() {
       proxyUrl={clerkProxyUrl}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
+      afterSignInUrl={`${basePath}/dashboard`}
+      afterSignOutUrl={`${basePath}/`}
       localization={{
         signIn: { start: { title: 'STG Admin Portal', subtitle: 'Sign in to manage operations' } },
       }}
@@ -224,6 +227,9 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/settings">
               <Guard><SettingsPage /></Guard>
+            </Route>
+            <Route path="/chat">
+              <Guard><ChatPage /></Guard>
             </Route>
             <Route component={NotFound} />
           </Switch>

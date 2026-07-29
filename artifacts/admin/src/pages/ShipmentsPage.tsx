@@ -7,7 +7,7 @@ import {
 import type { ShipmentInput } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
-import { Plus, Search, Archive, Copy, Eye, ChevronLeft, ChevronRight, Trash2, Download, Upload, QrCode, Printer } from 'lucide-react';
+import { Plus, Search, Archive, Copy, Eye, ChevronLeft, ChevronRight, Trash2, Download, Upload, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,6 +55,8 @@ export default function ShipmentsPage() {
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
+  const [createdTracking, setCreatedTracking] = useState<string | null>(null);
+  const [copiedTracking, setCopiedTracking] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState<Partial<ShipmentInput>>({});
@@ -88,10 +90,10 @@ export default function ShipmentsPage() {
     }
     const { trackingNumber: _tn, ...rest } = form as any;
     createShipment.mutate({ data: rest as ShipmentInput }, {
-      onSuccess: () => {
-        toast({ title: 'Shipment created' });
+      onSuccess: (res: any) => {
         qc.invalidateQueries({ queryKey: getListShipmentsQueryKey() });
-        setCreateOpen(false); setForm({});
+        setCreatedTracking(res?.trackingNumber ?? null);
+        setForm({});
       },
       onError: () => toast({ title: 'Failed to create shipment', variant: 'destructive' }),
     });
@@ -233,9 +235,45 @@ export default function ShipmentsPage() {
       )}
 
       {/* Create Dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) { setCreatedTracking(null); setCopiedTracking(false); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>New Shipment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{createdTracking ? 'Shipment Created' : 'New Shipment'}</DialogTitle></DialogHeader>
+
+          {/* ── Success state: show tracking number ── */}
+          {createdTracking ? (
+            <div className="flex flex-col items-center gap-5 py-6">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-1">Shipment tracking number</p>
+                <div className="font-mono font-bold text-2xl text-primary tracking-widest bg-slate-50 border rounded-xl px-6 py-3">
+                  {createdTracking}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">Share this number with the customer so they can track their shipment at sinovera.com/track</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(createdTracking);
+                    setCopiedTracking(true);
+                    setTimeout(() => setCopiedTracking(false), 2000);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors"
+                >
+                  {copiedTracking ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
+                  {copiedTracking ? 'Copied!' : 'Copy Number'}
+                </button>
+                <button
+                  onClick={() => { setCreatedTracking(null); setCopiedTracking(false); setCreateOpen(false); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="space-y-5">
             {/* Tracking + Status */}
             <div className="grid grid-cols-2 gap-4">
@@ -356,6 +394,8 @@ export default function ShipmentsPage() {
               {createShipment.isPending ? 'Creating...' : 'Create Shipment'}
             </Button>
           </DialogFooter>
+          </>
+          )}
         </DialogContent>
       </Dialog>
 
