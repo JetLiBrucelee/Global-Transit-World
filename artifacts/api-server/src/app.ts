@@ -14,6 +14,11 @@ import router from "./routes";
 
 const app: Express = express();
 
+// Trust exactly one upstream proxy hop (Replit's ingress / reverse proxy).
+// This makes req.ip the real client IP from X-Forwarded-For without letting
+// clients inject arbitrary IPs into a longer forwarded-for chain.
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,

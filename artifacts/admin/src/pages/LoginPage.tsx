@@ -19,7 +19,14 @@ export default function LoginPage() {
     const result = await login(username, password);
     setLoading(false);
     if (result.error) {
-      setError(result.error);
+      if (result.rateLimited && result.retryAfterSeconds) {
+        const minutes = Math.ceil(result.retryAfterSeconds / 60);
+        setError(
+          `Too many failed attempts. Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`
+        );
+      } else {
+        setError(result.error);
+      }
     } else {
       setLocation('/dashboard');
     }

@@ -10,6 +10,67 @@ if (!SESSION_SECRET) {
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+// ---------------------------------------------------------------------------
+// In-memory rate limiter for login attempts
+// ---------------------------------------------------------------------------
+const RATE_LIMIT_MAX_FAILURES = 5;       // failures allowed before lockout
+const RATE_LIMIT_WINDOW_MS   = 60_000;  // 1-minute sliding window
+const RATE_LIMIT_LOCKOUT_MS  = 60_000;  // lockout duration (1 minute)
+
+interface RateLimitEntry {
+  failures: number;
+  windowStart: number;
+  lockedUntil: number | null;
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+/** Returns { allowed: true } or { allowed: false, retryAfterMs } */
+function checkRateLimit(ip: string): { allowed: true } | { allowed: false; retryAfterMs: number } {
+  const now = Date.now();
+  let entry = rateLimitStore.get(ip);
+
+  if (!entry) {
+    entry = { failures: 0, windowStart: now, lockedUntil: null };
+    rateLimitStore.set(ip, entry);
+  }
+
+  // If currently locked out, check whether the lockout has expired
+  if (entry.lockedUntil !== null) {
+    if (now < entry.lockedUntil) {
+      return { allowed: false, retryAfterMs: entry.lockedUntil - now };
+    }
+    // Lockout expired — reset
+    entry.failures = 0;
+    entry.windowStart = now;
+    entry.lockedUntil = null;
+  }
+
+  // Slide the window if it has expired
+  if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry.failures = 0;
+    entry.windowStart = now;
+  }
+
+  return { allowed: true };
+}
+
+function recordFailure(ip: string): void {
+  const now = Date.now();
+  const entry = rateLimitStore.get(ip);
+  if (!entry) return;
+
+  entry.failures += 1;
+
+  if (entry.failures >= RATE_LIMIT_MAX_FAILURES) {
+    entry.lockedUntil = now + RATE_LIMIT_LOCKOUT_MS;
+  }
+}
+
+function recordSuccess(ip: string): void {
+  rateLimitStore.delete(ip);
+}
+
 function sign(payload: string): string {
   return createHmac("sha256", SESSION_SECRET!).update(payload).digest("hex");
 }
@@ -42,6 +103,26 @@ export function verifyAdminToken(token: string): boolean {
 
 // POST /api/admin-auth/login
 router.post("/admin-auth/login", (req, res) => {
+  // Use req.ip — Express computes this from X-Forwarded-For according to the
+  // `trust proxy` setting (1 hop, configured in app.ts for Replit's ingress proxy).
+  // This gives the real per-client IP as recorded by Replit's proxy without
+  // collapsing all clients onto the proxy socket address.
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+
+  // Check rate limit before touching credentials
+  const rateCheck = checkRateLimit(ip);
+  if (!rateCheck.allowed) {
+    const retryAfterSec = Math.ceil(rateCheck.retryAfterMs / 1000);
+    res
+      .status(429)
+      .setHeader("Retry-After", String(retryAfterSec))
+      .json({
+        error: "Too many failed login attempts.",
+        retryAfterSeconds: retryAfterSec,
+      });
+    return;
+  }
+
   const { username, password } = req.body as { username?: string; password?: string };
 
   const expectedUsername = process.env.ADMIN_USERNAME ?? "";
@@ -64,10 +145,12 @@ router.post("/admin-auth/login", (req, res) => {
   const passwordMatch = !!password && safeCompare(password, expectedPassword);
 
   if (!usernameMatch || !passwordMatch) {
+    recordFailure(ip);
     res.status(401).json({ error: "Invalid username or password." });
     return;
   }
 
+  recordSuccess(ip);
   const token = makeToken(expectedUsername);
   res.json({ token });
 });
