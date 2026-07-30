@@ -2,6 +2,7 @@ import { getAuth } from "@clerk/express";
 import type { Request, Response, NextFunction } from "express";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { verifyAdminToken } from "../routes/adminAuth";
 
 export type UserRole =
   | "super_admin"
@@ -43,12 +44,35 @@ declare global {
     interface Request {
       currentUser?: typeof usersTable.$inferSelect;
       clerkUserId?: string;
+      /** Set to true when the request carries a valid admin session token */
+      adminAuthenticated?: boolean;
     }
   }
 }
 
-/** Require any authenticated Clerk session. Attaches clerkUserId to req. */
+/**
+ * Middleware that checks for an `Authorization: Bearer <admin-token>` header
+ * and stamps `req.adminAuthenticated = true` when the token is valid.
+ * Must be registered before any auth-gating middleware.
+ */
+export function adminTokenMiddleware(req: Request, _res: Response, next: NextFunction): void {
+  const header = req.headers["authorization"];
+  if (header?.startsWith("Bearer ")) {
+    const token = header.slice(7);
+    if (verifyAdminToken(token)) {
+      req.adminAuthenticated = true;
+    }
+  }
+  next();
+}
+
+/** Require any authenticated Clerk session. Attaches clerkUserId to req.
+ *  Also passes through requests already authenticated via the admin token. */
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  if (req.adminAuthenticated) {
+    next();
+    return;
+  }
   const auth = getAuth(req);
   const clerkUserId = auth?.userId;
   if (!clerkUserId) {
@@ -59,12 +83,17 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   next();
 }
 
-/** Require auth AND load the DB user record. Attaches currentUser to req. */
+/** Require auth AND load the DB user record. Attaches currentUser to req.
+ *  Admin-token requests bypass the user-record lookup. */
 export async function requireUserRecord(
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
+  if (req.adminAuthenticated) {
+    next();
+    return;
+  }
   const auth = getAuth(req);
   const clerkUserId = auth?.userId;
   if (!clerkUserId) {
@@ -94,6 +123,11 @@ export async function requireUserRecord(
 /** Require a minimum role level. Call after requireUserRecord. */
 export function requireRole(...roles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
+    // Admin portal sessions have super-admin level access
+    if (req.adminAuthenticated) {
+      next();
+      return;
+    }
     const user = req.currentUser;
     if (!user) {
       res.status(401).json({ error: "Unauthorized" });
@@ -111,6 +145,11 @@ export function requireRole(...roles: UserRole[]) {
 
 /** Require the user to be any staff role (not customer) */
 export function requireStaff(req: Request, res: Response, next: NextFunction): void {
+  // Admin portal sessions are implicitly staff
+  if (req.adminAuthenticated) {
+    next();
+    return;
+  }
   const user = req.currentUser;
   if (!user) {
     res.status(401).json({ error: "Unauthorized" });

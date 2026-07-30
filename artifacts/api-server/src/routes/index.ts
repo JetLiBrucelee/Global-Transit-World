@@ -13,10 +13,12 @@ import auditRouter from "./audit";
 import dashboardRouter from "./dashboard";
 import chatRouter from "./chat";
 import contactRouter from "./contact";
+import adminAuthRouter from "./adminAuth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(adminAuthRouter);
 router.use(shipmentsRouter);
 router.use(trackingRouter);
 router.use(holdsRouter);

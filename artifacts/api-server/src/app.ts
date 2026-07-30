@@ -9,6 +9,7 @@ import {
   clerkProxyMiddleware,
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
+import { adminTokenMiddleware } from "./lib/auth";
 import router from "./routes";
 
 const app: Express = express();
@@ -47,6 +48,9 @@ app.use(
     ),
   })),
 );
+
+// Check admin session tokens before route auth guards
+app.use(adminTokenMiddleware);
 
 app.use("/api", router);
 

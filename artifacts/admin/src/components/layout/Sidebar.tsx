@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { useClerk, useUser } from '@clerk/react';
+import { useAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, Users, FileText, Newspaper,
   UserCog, Warehouse, Truck, ClipboardList, LogOut, ChevronRight,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { adminFetch } from '@/lib/adminFetch';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const API_BASE = basePath.replace(/\/admin$/, '') + '/api';
@@ -36,14 +37,13 @@ const nav: NavItem[] = [
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { signOut } = useClerk();
-  const { user } = useUser();
+  const { logout } = useAuth();
   const [chatUnread, setChatUnread] = useState(0);
 
   useEffect(() => {
     async function fetchUnread() {
       try {
-        const res = await fetch(`${API_BASE}/chat/unread-count`, { credentials: 'include' });
+        const res = await adminFetch(`${API_BASE}/chat/unread-count`);
         if (res.ok) {
           const data = await res.json();
           setChatUnread(data.count ?? 0);
@@ -101,28 +101,18 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User */}
+      {/* User / Logout */}
       <div className="px-3 py-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0">
-            {user?.imageUrl ? (
-              <img src={user.imageUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
-            ) : (
-              <span className="text-xs font-semibold text-sidebar-foreground">
-                {user?.firstName?.[0]}{user?.lastName?.[0]}
-              </span>
-            )}
+            <span className="text-xs font-semibold text-sidebar-foreground">A</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sidebar-foreground text-xs font-semibold truncate">
-              {user?.firstName} {user?.lastName}
-            </div>
-            <div className="text-[#64748b] text-[10px] truncate">
-              {user?.primaryEmailAddress?.emailAddress}
-            </div>
+            <div className="text-sidebar-foreground text-xs font-semibold truncate">Admin</div>
+            <div className="text-[#64748b] text-[10px] truncate">Staff Portal</div>
           </div>
           <button
-            onClick={() => signOut({ redirectUrl: basePath || '/' })}
+            onClick={logout}
             className="text-[#64748b] hover:text-red-400 transition-colors"
             title="Sign out"
           >

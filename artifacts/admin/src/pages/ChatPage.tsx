@@ -3,6 +3,7 @@ import { MessageCircle, Send, Loader2, CheckCircle, XCircle, RefreshCw, User, Cl
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { adminFetch } from "@/lib/adminFetch";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "").replace(/\/admin$/, "") + "/api";
 
@@ -24,11 +25,7 @@ interface Message {
 }
 
 async function apiFetch(path: string, opts?: RequestInit) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...opts,
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(opts?.headers ?? {}) },
-  });
+  const res = await adminFetch(`${API_BASE}${path}`, opts);
   if (!res.ok) throw new Error(`${res.status}`);
   return res.json();
 }
