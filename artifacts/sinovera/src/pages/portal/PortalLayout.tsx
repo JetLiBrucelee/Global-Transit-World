@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  LayoutDashboard, Package, Bell, Settings, HelpCircle, ChevronRight
+  LayoutDashboard, Package, Bell, Settings, HelpCircle, ChevronRight, FileText
 } from "lucide-react";
 import { useListNotifications } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,7 @@ function PortalSidebar() {
   const navItems: NavItem[] = [
     { label: "Dashboard", href: "/portal", icon: LayoutDashboard },
     { label: "My Shipments", href: "/portal/shipments", icon: Package },
+    { label: "My Quotes", href: "/portal/quotes", icon: FileText },
     { label: "Notifications", href: "/portal/notifications", icon: Bell, badge: unreadCount },
     { label: "Settings", href: "/portal/settings", icon: Settings },
     { label: "Support", href: "/portal/support", icon: HelpCircle },
@@ -72,9 +73,9 @@ function PortalMobileNav() {
   const navItems = [
     { label: "Dashboard", href: "/portal", icon: LayoutDashboard },
     { label: "Shipments", href: "/portal/shipments", icon: Package },
+    { label: "Quotes", href: "/portal/quotes", icon: FileText },
     { label: "Alerts", href: "/portal/notifications", icon: Bell, badge: unreadCount },
     { label: "Settings", href: "/portal/settings", icon: Settings },
-    { label: "Support", href: "/portal/support", icon: HelpCircle },
   ];
 
   return (

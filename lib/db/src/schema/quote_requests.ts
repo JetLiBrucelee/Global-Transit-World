@@ -8,6 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { shipmentsTable } from "./shipments";
 
 export const quoteStatusEnum = pgEnum("quote_status", [
   "pending",
@@ -44,6 +45,10 @@ export const quoteRequestsTable = pgTable("quote_requests", {
   status: quoteStatusEnum("status").notNull().default("pending"),
   quotedPrice: numeric("quoted_price", { precision: 12, scale: 2 }),
   adminNotes: text("admin_notes"),
+
+  // Set when admin accepts the quote — links to the created shipment
+  shipmentId: uuid("shipment_id").references(() => shipmentsTable.id, { onDelete: "set null" }),
+  trackingNumber: text("tracking_number"),
 
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),

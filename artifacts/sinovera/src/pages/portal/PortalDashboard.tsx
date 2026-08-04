@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import {
   Package, Bell, ChevronRight, Truck, AlertTriangle, CheckCircle2,
-  Clock, ArrowRight, Settings, HelpCircle
+  Clock, ArrowRight, Settings, HelpCircle, FileText
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -194,11 +194,10 @@ export default function PortalDashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
         {[
           { label: "Track New", href: "/track", icon: Package, color: "text-blue-600 bg-blue-50" },
-          { label: "Get a Quote", href: "/quote", icon: Truck, color: "text-amber-600 bg-amber-50" },
-          { label: "Notifications", href: "/portal/notifications", icon: Bell, color: "text-purple-600 bg-purple-50" },
-          { label: "Settings", href: "/portal/settings", icon: Settings, color: "text-slate-600 bg-slate-100" },
+          { label: "My Quotes", href: "/portal/quotes", icon: FileText, color: "text-amber-600 bg-amber-50" },
+          { label: "Get a Quote", href: "/quote", icon: Truck, color: "text-primary bg-primary/5" },
           { label: "Support", href: "/portal/support", icon: HelpCircle, color: "text-green-600 bg-green-50" },
-        ].slice(0, 4).map(item => (
+        ].map(item => (
           <Link key={item.href} href={item.href}>
             <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer group">
               <div className={`w-9 h-9 rounded-lg ${item.color} flex items-center justify-center mb-2`}>

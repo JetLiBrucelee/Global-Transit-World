@@ -26,6 +26,7 @@ import NotFound from '@/pages/not-found';
 
 import PortalDashboard from '@/pages/portal/PortalDashboard';
 import ShipmentHistory from '@/pages/portal/ShipmentHistory';
+import MyQuotes from '@/pages/portal/MyQuotes';
 import Notifications from '@/pages/portal/Notifications';
 import PortalSettings from '@/pages/portal/PortalSettings';
 import PortalSupport from '@/pages/portal/PortalSupport';
@@ -184,6 +185,9 @@ function PublicRoutes() {
         </Route>
         <Route path="/portal/shipments">
           <PortalGuard><ShipmentHistory /></PortalGuard>
+        </Route>
+        <Route path="/portal/quotes">
+          <PortalGuard><MyQuotes /></PortalGuard>
         </Route>
         <Route path="/portal/notifications">
           <PortalGuard><Notifications /></PortalGuard>
