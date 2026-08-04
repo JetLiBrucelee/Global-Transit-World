@@ -29,17 +29,40 @@ router.post("/quotes", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const referenceNumber = generateQuoteReference();
-  const [quote] = await db.insert(quoteRequestsTable).values({
-    referenceNumber, contactName: body.contactName, contactEmail: body.contactEmail,
-    contactPhone: body.contactPhone || null, companyName: body.companyName || null,
-    originCity: body.originCity, originCountry: body.originCountry || "CN",
-    destinationCity: body.destinationCity, destinationCountry: body.destinationCountry,
-    serviceType: body.serviceType, weightKg: body.weightKg || null, dimensions: body.dimensions || null,
-    cargoDescription: body.cargoDescription || null, declaredValue: body.declaredValue || null,
-    currency: body.currency || "USD", specialRequirements: body.specialRequirements || null,
-  }).returning();
-  res.status(201).json(quote);
+
+  // Strip formatting characters so numeric DB columns don't crash.
+  // e.g. "1,920,000 kg" → "1920000",  "2,500.50" → "2500.50"
+  const toNumericString = (val: unknown): string | null => {
+    if (!val) return null;
+    const cleaned = String(val).replace(/[^0-9.]/g, "");
+    return cleaned || null;
+  };
+
+  try {
+    const referenceNumber = generateQuoteReference();
+    const [quote] = await db.insert(quoteRequestsTable).values({
+      referenceNumber,
+      contactName: body.contactName,
+      contactEmail: body.contactEmail,
+      contactPhone: body.contactPhone || null,
+      companyName: body.companyName || null,
+      originCity: body.originCity,
+      originCountry: body.originCountry || "CN",
+      destinationCity: body.destinationCity,
+      destinationCountry: body.destinationCountry,
+      serviceType: body.serviceType,
+      weightKg: toNumericString(body.weightKg),
+      dimensions: body.dimensions || null,
+      cargoDescription: body.cargoDescription || null,
+      declaredValue: toNumericString(body.declaredValue),
+      currency: body.currency || "USD",
+      specialRequirements: body.specialRequirements || null,
+    }).returning();
+    res.status(201).json(quote);
+  } catch (err) {
+    console.error("Failed to create quote:", err);
+    res.status(500).json({ error: "Failed to save quote request. Please try again." });
+  }
 });
 
 router.get("/quotes/:id", requireAuth, requireUserRecord, requireStaff, async (req, res): Promise<void> => {
