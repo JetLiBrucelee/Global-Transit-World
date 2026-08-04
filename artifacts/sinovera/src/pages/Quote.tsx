@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, Plane, Anchor, Train, Truck, ShieldCheck, Package } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const schema = z.object({
   contactName: z.string().min(2, "Name is required"),
@@ -47,9 +47,11 @@ const SERVICES = [
 export default function Quote() {
   const [submitted, setSubmitted] = useState(false);
   const [refNumber, setRefNumber] = useState("");
+  const [apiError, setApiError] = useState<string | null>(null);
   const { mutate: createQuote, isPending } = useCreateQuote();
+  const serviceSectionRef = useRef<HTMLDivElement>(null);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, setValue, watch, setFocus, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { currency: "USD" },
   });
@@ -57,12 +59,32 @@ export default function Quote() {
   const selectedService = watch("serviceType");
 
   const onSubmit = (data: FormValues) => {
+    setApiError(null);
     createQuote({ data: data }, {
       onSuccess: (result) => {
         setRefNumber(result.referenceNumber ?? "STG-Q-" + Date.now());
         setSubmitted(true);
       },
+      onError: (err: unknown) => {
+        const e = err as { data?: { error?: string }; message?: string };
+        setApiError(e?.data?.error ?? e?.message ?? "Something went wrong. Please try again.");
+      },
     });
+  };
+
+  // Scroll to the first invalid field so the user sees what needs fixing
+  const onInvalid = () => {
+    const inputFields = ["contactName", "contactEmail", "originCity", "originCountry", "destinationCity", "destinationCountry"] as const;
+    for (const field of inputFields) {
+      if (errors[field]) {
+        setFocus(field);
+        return;
+      }
+    }
+    // serviceType is a button group — scroll its section into view
+    if (errors.serviceType) {
+      serviceSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
   if (submitted) {
@@ -123,7 +145,7 @@ export default function Quote() {
       </div>
 
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" data-testid="form-quote">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-8" data-testid="form-quote">
           <div className="grid md:grid-cols-2 gap-8">
             {/* Contact Details */}
             <Card className="p-6">
@@ -183,7 +205,7 @@ export default function Quote() {
           </div>
 
           {/* Service Selection */}
-          <Card className="p-6">
+          <Card className="p-6" ref={serviceSectionRef}>
             <h2 className="font-bold text-primary text-lg mb-5">Service Type *</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {SERVICES.map(({ value, label, icon: Icon }) => (
@@ -247,6 +269,27 @@ export default function Quote() {
           </Card>
 
           <div className="text-center">
+            {/* Validation error summary — visible when user submits with missing fields */}
+            {Object.keys(errors).length > 0 && (
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-left">
+                <strong>Please fix the following before submitting:</strong>
+                <ul className="mt-1 list-disc list-inside space-y-0.5">
+                  {errors.contactName && <li>{errors.contactName.message}</li>}
+                  {errors.contactEmail && <li>{errors.contactEmail.message}</li>}
+                  {errors.originCity && <li>{errors.originCity.message}</li>}
+                  {errors.originCountry && <li>{errors.originCountry.message}</li>}
+                  {errors.destinationCity && <li>{errors.destinationCity.message}</li>}
+                  {errors.destinationCountry && <li>{errors.destinationCountry.message}</li>}
+                  {errors.serviceType && <li>{errors.serviceType.message}</li>}
+                </ul>
+              </div>
+            )}
+            {/* API error */}
+            {apiError && (
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {apiError}
+              </div>
+            )}
             <Button
               type="submit"
               disabled={isPending}
