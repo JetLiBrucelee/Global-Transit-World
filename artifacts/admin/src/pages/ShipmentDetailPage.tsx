@@ -73,6 +73,9 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
   const [editForm, setEditForm] = useState<any>({});
   const [eventOpen, setEventOpen] = useState(false);
   const [eventForm, setEventForm] = useState<any>({ isPublic: true });
+  const [editEventOpen, setEditEventOpen] = useState(false);
+  const [editEventForm, setEditEventForm] = useState<any>({});
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [holdOpen, setHoldOpen] = useState(false);
   const [holdForm, setHoldForm] = useState<any>({ notifyCustomer: true });
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -105,10 +108,55 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
     });
   }
 
+  function localDateTimeNow() {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+
+  function toDateTimeInput(iso: string) {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function openEditEvent(ev: any) {
+    setEditingEventId(ev.id);
+    setEditEventForm({
+      status: ev.status ?? '',
+      customStatus: ev.customStatus ?? '',
+      description: ev.description ?? '',
+      location: ev.location ?? '',
+      facility: ev.facility ?? '',
+      city: ev.city ?? '',
+      country: ev.country ?? '',
+      eventTime: ev.eventTime ? toDateTimeInput(ev.eventTime) : localDateTimeNow(),
+      isPublic: ev.isPublic ?? true,
+    });
+    setEditEventOpen(true);
+  }
+
+  function handleUpdateEvent() {
+    if (!editingEventId) return;
+    if (!editEventForm.status) { toast({ title: 'Status is required', variant: 'destructive' }); return; }
+    if (!editEventForm.description) { toast({ title: 'Description is required', variant: 'destructive' }); return; }
+    if (!editEventForm.eventTime) { toast({ title: 'Date & time is required', variant: 'destructive' }); return; }
+    updateEvent.mutate({ id, eventId: editingEventId, data: editEventForm }, {
+      onSuccess: () => {
+        toast({ title: 'Event updated' });
+        qc.invalidateQueries({ queryKey: getListTrackingEventsQueryKey(id) });
+        setEditEventOpen(false);
+        setEditingEventId(null);
+      },
+      onError: () => toast({ title: 'Failed to update event', variant: 'destructive' }),
+    });
+  }
+
   function handleAddEvent() {
     const data = { ...eventForm };
     if (!data.status) { toast({ title: 'Status is required', variant: 'destructive' }); return; }
     if (!data.description) { toast({ title: 'Description is required', variant: 'destructive' }); return; }
+    if (!data.eventTime) { toast({ title: 'Date & time is required', variant: 'destructive' }); return; }
     addEvent.mutate({ id, data }, {
       onSuccess: () => { toast({ title: 'Event added' }); qc.invalidateQueries({ queryKey: getListTrackingEventsQueryKey(id) }); setEventOpen(false); setEventForm({ isPublic: true }); },
       onError: () => toast({ title: 'Failed to add event', variant: 'destructive' }),
@@ -233,7 +281,7 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <h2 className="font-semibold text-sm">Tracking Events ({eventsArr.length})</h2>
-            <Button size="sm" variant="outline" onClick={() => setEventOpen(true)}><Plus size={12} className="mr-1" />Add</Button>
+            <Button size="sm" variant="outline" onClick={() => { setEventForm({ isPublic: true, eventTime: localDateTimeNow() }); setEventOpen(true); }}><Plus size={12} className="mr-1" />Add</Button>
           </div>
           <div className="divide-y divide-border max-h-96 overflow-y-auto">
             {eventsArr.length === 0 ? (
@@ -250,9 +298,14 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
                   {(ev.location || ev.city) && <p className="text-xs text-muted-foreground ml-4">{[ev.facility, ev.location, ev.city, ev.country].filter(Boolean).join(', ')}</p>}
                   <p className="text-xs text-muted-foreground ml-4">{new Date(ev.eventTime ?? ev.createdAt).toLocaleString()}</p>
                 </div>
-                <button onClick={() => handleDeleteEvent(ev.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 hover:text-red-600 rounded transition-all">
-                  <Trash2 size={12} />
-                </button>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                  <button onClick={() => openEditEvent(ev)} className="p-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-all" title="Edit event">
+                    <Edit2 size={12} />
+                  </button>
+                  <button onClick={() => handleDeleteEvent(ev.id)} className="p-1 hover:bg-red-50 hover:text-red-600 rounded transition-all" title="Delete event">
+                    <Trash2 size={12} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -428,6 +481,44 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setEventOpen(false)}>Cancel</Button>
             <Button size="sm" onClick={handleAddEvent} disabled={addEvent.isPending}>Add Event</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Edit Event Dialog ── */}
+      <Dialog open={editEventOpen} onOpenChange={setEditEventOpen}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Edit Tracking Event</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs">Status *</Label>
+              <Select value={editEventForm.status ?? ''} onValueChange={v => setEditEventForm((f: any) => ({...f, status: v}))}>
+                <SelectTrigger className="h-8 text-sm mt-1"><SelectValue placeholder="Select status..." /></SelectTrigger>
+                <SelectContent>{ALL_STATUSES.map(s => <SelectItem key={s} value={s}>{fmt(s)}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            {editEventForm.status === 'custom' && (
+              <div><Label className="text-xs">Custom Status Label</Label><Input className="h-8 text-sm mt-1" value={editEventForm.customStatus ?? ''} onChange={e => setEditEventForm((f: any) => ({...f, customStatus: e.target.value}))} /></div>
+            )}
+            <div><Label className="text-xs">Description *</Label><Textarea className="text-sm mt-1" rows={2} value={editEventForm.description ?? ''} onChange={e => setEditEventForm((f: any) => ({...f, description: e.target.value}))} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs">Location</Label><Input className="h-8 text-sm mt-1" value={editEventForm.location ?? ''} onChange={e => setEditEventForm((f: any) => ({...f, location: e.target.value}))} /></div>
+              <div><Label className="text-xs">Facility</Label><Input className="h-8 text-sm mt-1" value={editEventForm.facility ?? ''} onChange={e => setEditEventForm((f: any) => ({...f, facility: e.target.value}))} /></div>
+              <div><Label className="text-xs">City</Label><Input className="h-8 text-sm mt-1" value={editEventForm.city ?? ''} onChange={e => setEditEventForm((f: any) => ({...f, city: e.target.value}))} /></div>
+              <div><Label className="text-xs">Country</Label><Input className="h-8 text-sm mt-1" value={editEventForm.country ?? ''} onChange={e => setEditEventForm((f: any) => ({...f, country: e.target.value}))} /></div>
+            </div>
+            <div>
+              <Label className="text-xs">Event Date &amp; Time *</Label>
+              <Input type="datetime-local" className="h-8 text-sm mt-1" required value={editEventForm.eventTime ?? ''} onChange={e => setEditEventForm((f: any) => ({...f, eventTime: e.target.value}))} />
+            </div>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" checked={editEventForm.isPublic ?? true} onChange={e => setEditEventForm((f: any) => ({...f, isPublic: e.target.checked}))} className="rounded" />
+              Visible to customer
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setEditEventOpen(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleUpdateEvent} disabled={updateEvent.isPending}>{updateEvent.isPending ? 'Saving...' : 'Save Changes'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
