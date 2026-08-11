@@ -23,7 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
 const ALL_STATUSES = [
-  'shipment_created','collected','at_warehouse','departed_warehouse','at_airport','departed_airport',
+  'shipment_created','collected','at_warehouse','departed_warehouse','at_deport','departed_deport',
   'in_transit','arrived_at_transit_hub','processing','out_for_delivery','delivered','delivery_failed',
   'returned','shipment_exception','delayed','cancelled','lost','damaged','awaiting_pickup',
   'customs_review','customs_hold','released','package_hold','security_inspection','operational_delay',
