@@ -60,6 +60,7 @@ export default function ShipmentsPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState<Partial<ShipmentInput>>({});
+  const [numberOfPackagesStr, setNumberOfPackagesStr] = useState('');
 
   const { data, isLoading } = useListShipments({ search: search || undefined, status: status || undefined, page, limit: 20 });
   const { data: warehousesData } = useListWarehouses();
@@ -89,11 +90,16 @@ export default function ShipmentsPage() {
       return;
     }
     const { trackingNumber: _tn, ...rest } = form as any;
+    if (numberOfPackagesStr !== '') {
+      const parsed = Number(numberOfPackagesStr);
+      if (Number.isFinite(parsed)) rest.numberOfPackages = parsed;
+    }
     createShipment.mutate({ data: rest as ShipmentInput }, {
       onSuccess: (res: any) => {
         qc.invalidateQueries({ queryKey: getListShipmentsQueryKey() });
         setCreatedTracking(res?.trackingNumber ?? null);
         setForm({});
+        setNumberOfPackagesStr('');
       },
       onError: () => toast({ title: 'Failed to create shipment', variant: 'destructive' }),
     });
@@ -335,10 +341,10 @@ export default function ShipmentsPage() {
 
             {/* Package */}
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Package</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Cargo</p>
               <div className="grid grid-cols-3 gap-3">
                 <div><Label className="text-xs">Weight (kg)</Label><Input type="number" className="h-8 text-sm mt-1" value={form.weightKg ?? ''} onChange={e => setField('weightKg', e.target.value)} /></div>
-                <div><Label className="text-xs">Packages</Label><Input type="number" className="h-8 text-sm mt-1" value={form.numberOfPackages ?? ''} onChange={e => setForm(f => ({ ...f, numberOfPackages: Number(e.target.value) }))} /></div>
+                <div><Label className="text-xs">Cargo</Label><Input type="number" className="h-8 text-sm mt-1" value={numberOfPackagesStr} onChange={e => setNumberOfPackagesStr(e.target.value)} /></div>
                 <div><Label className="text-xs">Dimensions</Label><Input className="h-8 text-sm mt-1" placeholder="L×W×H" value={form.dimensions ?? ''} onChange={e => setField('dimensions', e.target.value)} /></div>
                 <div><Label className="text-xs">Declared Value</Label><Input className="h-8 text-sm mt-1" value={form.declaredValue ?? ''} onChange={e => setField('declaredValue', e.target.value)} /></div>
                 <div><Label className="text-xs">Currency</Label><Input className="h-8 text-sm mt-1" placeholder="USD" value={form.currency ?? ''} onChange={e => setField('currency', e.target.value)} /></div>

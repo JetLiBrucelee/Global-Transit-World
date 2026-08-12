@@ -46,7 +46,7 @@ function generateShipmentsCSV(shipments: any[]) {
   const headers = [
     'Tracking Number','Status','Sender Name','Sender Email','Receiver Name','Receiver Email',
     'Origin City','Origin Country','Dest City','Dest Country','Shipping Method',
-    'Weight (kg)','Packages','Declared Value','Currency','Est. Delivery','Actual Delivery',
+    'Weight (kg)','Cargo','Declared Value','Currency','Est. Delivery','Actual Delivery',
     'Warehouse ID','Carrier ID','Driver','Created At',
   ];
   const rows = shipments.map(s => [

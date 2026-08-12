@@ -93,8 +93,13 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
 
   function handleUpdate() {
     const { id: _id, createdAt: _ca, updatedAt: _ua, trackingNumber: _tn, isArchived: _ia, isHeld: _ih, ...rest } = editForm;
-    // clean empty strings to undefined
+    // clean empty strings to undefined; parse numeric fields to numbers
     const clean = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== '' && v !== null));
+    if (clean.numberOfPackages !== undefined) {
+      const parsed = Number(clean.numberOfPackages);
+      clean.numberOfPackages = Number.isFinite(parsed) ? parsed : undefined;
+      if (clean.numberOfPackages === undefined) delete clean.numberOfPackages;
+    }
     updateShipment.mutate({ id, data: clean }, {
       onSuccess: () => { toast({ title: 'Shipment updated' }); qc.invalidateQueries({ queryKey: getGetShipmentQueryKey(id) }); setEditOpen(false); },
       onError: () => toast({ title: 'Update failed', variant: 'destructive' }),
@@ -407,7 +412,7 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
               </div>
             </div>
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Package</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Cargo</p>
               <div className="grid grid-cols-3 gap-3">
                 <div><Label className="text-xs">Weight (kg)</Label><Input type="number" className="h-8 text-sm mt-1" value={editForm.weightKg ?? ''} onChange={e => setEditForm((f: any) => ({...f, weightKg: e.target.value}))} /></div>
                 <div><Label className="text-xs">Cargo</Label><Input type="number" min="1" className="h-8 text-sm mt-1" value={editForm.numberOfPackages ?? ''} onChange={e => setEditForm((f: any) => ({...f, numberOfPackages: e.target.value === '' ? '' : Number(e.target.value)}))} /></div>

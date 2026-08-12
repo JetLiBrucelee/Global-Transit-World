@@ -326,7 +326,7 @@ export default function TrackDetailScreen() {
             {data.estimatedDelivery && <InfoRow label="Est. Delivery" value={formatDate(data.estimatedDelivery)} />}
             {data.actualDelivery && <InfoRow label="Delivered On" value={formatDate(data.actualDelivery)} />}
             {data.weightKg && <InfoRow label="Weight" value={`${data.weightKg} kg`} />}
-            <InfoRow label="Packages" value={String(data.numberOfPackages)} />
+            <InfoRow label="Cargo" value={String(data.numberOfPackages)} />
             {data.senderNameMasked && <InfoRow label="Sender" value={data.senderNameMasked} />}
             {data.receiverNameMasked && <InfoRow label="Receiver" value={data.receiverNameMasked} />}
           </View>
