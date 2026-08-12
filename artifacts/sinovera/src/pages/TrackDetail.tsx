@@ -258,7 +258,7 @@ export default function TrackDetail() {
               <InfoRow label="Delivered On" value={format(new Date(data.actualDelivery), "MMM d, yyyy")} />
             )}
             {data.weightKg && <InfoRow label="Weight" value={`${data.weightKg} kg`} />}
-            <InfoRow label="Packages" value={String(data.numberOfPackages)} />
+            <InfoRow label="Cargo" value={String(data.numberOfPackages)} />
             {data.senderNameMasked && <InfoRow label="Sender" value={data.senderNameMasked} />}
             {data.receiverNameMasked && <InfoRow label="Receiver" value={data.receiverNameMasked} />}
           </div>

@@ -227,7 +227,7 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
         {[
           ['Method', fmt(s.shippingMethod)],
           ['Weight', s.weightKg ? `${s.weightKg} kg` : '—'],
-          ['Packages', s.numberOfPackages?.toString()],
+          ['Cargo', s.numberOfPackages?.toString()],
           ['Service Type', fmt(s.serviceType)],
           ['Est. Delivery', s.estimatedDelivery ? new Date(s.estimatedDelivery).toLocaleDateString() : '—'],
           ['Actual Delivery', s.actualDelivery ? new Date(s.actualDelivery).toLocaleDateString() : '—'],
@@ -410,7 +410,7 @@ export default function ShipmentDetailPage({ id }: { id: string }) {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Package</p>
               <div className="grid grid-cols-3 gap-3">
                 <div><Label className="text-xs">Weight (kg)</Label><Input type="number" className="h-8 text-sm mt-1" value={editForm.weightKg ?? ''} onChange={e => setEditForm((f: any) => ({...f, weightKg: e.target.value}))} /></div>
-                <div><Label className="text-xs">Packages</Label><Input type="number" className="h-8 text-sm mt-1" value={editForm.numberOfPackages ?? ''} onChange={e => setEditForm((f: any) => ({...f, numberOfPackages: Number(e.target.value)}))} /></div>
+                <div><Label className="text-xs">Cargo</Label><Input type="number" min="1" className="h-8 text-sm mt-1" value={editForm.numberOfPackages ?? ''} onChange={e => setEditForm((f: any) => ({...f, numberOfPackages: e.target.value === '' ? '' : Number(e.target.value)}))} /></div>
                 <div><Label className="text-xs">Dimensions</Label><Input className="h-8 text-sm mt-1" value={editForm.dimensions ?? ''} onChange={e => setEditForm((f: any) => ({...f, dimensions: e.target.value}))} /></div>
                 <div><Label className="text-xs">Declared Value</Label><Input className="h-8 text-sm mt-1" value={editForm.declaredValue ?? ''} onChange={e => setEditForm((f: any) => ({...f, declaredValue: e.target.value}))} /></div>
                 <div><Label className="text-xs">Currency</Label><Input className="h-8 text-sm mt-1" value={editForm.currency ?? ''} onChange={e => setEditForm((f: any) => ({...f, currency: e.target.value}))} /></div>

@@ -147,10 +147,10 @@ export function Navbar() {
             <div className="group relative">
               <button className="flex items-center gap-2 rounded-full border border-border/50 px-3 py-1.5 hover:border-primary/40 transition-colors bg-white">
                 <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0">
-                  {user?.firstName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase() ?? 'U'}
+                  {user?.firstName?.[0] ?? user?.lastName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase() ?? 'U'}
                 </div>
                 <span className="text-sm font-medium text-foreground/80 max-w-[120px] truncate">
-                  {user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? 'Account'}
+                  {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? 'Account'}
                 </span>
                 <ChevronDown className="w-3 h-3 text-foreground/50 transition-transform group-hover:rotate-180" />
               </button>
